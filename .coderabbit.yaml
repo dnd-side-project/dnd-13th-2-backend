@@ -15,8 +15,10 @@ reviews:
     - '!build/**'
     - '!.gradle/**'
     - '!.idea/**'
-    - '!**/resources/**'
-    - '!**/*Test.kt'
+    - '!**/resources/static/**'
+    - '!**/resources/public/**'
+    - '!**/resources/templates/**'
+    - '!src/test/**'
     - '!**/generated/**'
 
   path_instructions:
