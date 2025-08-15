@@ -6,5 +6,5 @@ import org.springframework.boot.runApplication
 @SpringBootApplication class EodigoApplication
 
 fun main(args: Array<String>) {
-  runApplication<EodigoApplication>(*args)
+    runApplication<EodigoApplication>(*args)
 }
