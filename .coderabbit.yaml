@@ -1,0 +1,47 @@
+language: ko
+
+reviews:
+  auto_review:
+    enabled: true
+    base_branches:
+      - develop
+    auto_incremental_review: true
+  poem: false
+
+  profile: 'chill'
+
+  path_filters:
+    - '!build/**'
+    - '!.gradle/**'
+    - '!.idea/**'
+    - '!**/resources/static/**'
+    - '!**/resources/public/**'
+    - '!**/resources/templates/**'
+    - '!src/test/**'
+    - '!**/generated/**'
+
+  path_instructions:
+    - path: 'src/**/*.kt'
+      instructions: |
+        ## 1. Kotlin 코딩 컨벤션
+        - Kotlin 공식 코딩 컨벤션을 준수해야 합니다.
+        - 클래스는 PascalCase, 함수/변수는 camelCase, 상수는 UPPER_SNAKE_CASE로 작성하세요.
+        - 변경 불가능한 데이터는 val을, 변경이 필요한 경우에만 var를 사용하세요.
+        - Null Pointer Exception을 유발하는 !! 연산자 사용을 금지합니다.
+        - 의미를 알 수 없는 숫자나 문자열(매직 넘버) 대신 명명된 상수를 사용하세요.
+
+        ## 2. Spring Boot
+        - Controller-Service-Repository 계층형 아키텍처의 책임을 분리하세요.
+        - Controller의 요청/응답에는 반드시 DTO를 사용하고, 엔티티를 직접 노출하지 마세요.
+        - 민감한 설정 정보(DB 계정, API 키 등)는 코드에 하드코딩하지 말고 외부에서 주입하세요.
+        - @Autowired 필드 주입 대신 생성자 주입을 사용하세요.
+
+        ## 3. JPA 및 데이터베이스
+        - @Entity 클래스에 Setter 사용을 지양하고, 비즈니스 메서드를 통해 상태를 변경하세요.
+        - 데이터를 변경하지 않는 조회용 Service 메서드에는 @Transactional(readOnly = true)를 적용하세요.
+        - N+1 문제가 발생하는 쿼리가 있는지 확인하고, Fetch Join으로 최적화하세요.
+        - 엔티티의 양방향 연관관계에서 toString()을 사용할 경우 순환 참조가 발생하지 않도록 주의하세요.
+
+        ## 4. 예외 처리
+        - @RestControllerAdvice를 사용하여 예외를 전역에서 일관되게 처리하세요.
+        - RuntimeException 대신, 의미가 명확한 커스텀 예외(예: MemberNotFoundException)를 정의하여 사용하세요.
