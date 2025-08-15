@@ -1,0 +1,80 @@
+name: Dev - CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: dnd-project/app
+  EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+
+jobs:
+  # 1. 빌드 및 ECR 푸시
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      image_uri: ${{ steps.build-image.outputs.image }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  # 2. EC2에 배포
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to EC2 instance via SSM Run Command
+        env:
+          IMAGE_URI: ${{ needs.build-and-push.outputs.image_uri }}
+          ECR_REGISTRY: ${{ needs.build-and-push.steps.login-ecr.outputs.registry }}
+        run: |
+          aws ssm send-command \
+            --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploying new version ${{ env.IMAGE_URI }}" \
+            --parameters 'commands=[
+              "# 1. ECR 로그인",
+              "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}",
+              "# 2. 최신 이미지 pull",
+              "docker pull ${{ env.IMAGE_URI }}",
+              "# 3. 기존 컨테이너 중지 및 삭제",
+              "if [ $(docker ps -a -q --filter name=dnd-app) ]; then docker stop dnd-app && docker rm dnd-app; fi",
+              "# 4. 새 컨테이너 실행",
+              "docker run -d --name dnd-app -p 80:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev ${{ env.IMAGE_URI }}"
+            ]'
