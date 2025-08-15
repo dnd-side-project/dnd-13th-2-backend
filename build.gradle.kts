@@ -12,10 +12,10 @@ version = "0.0.1-SNAPSHOT"
 
 spotless {
   kotlin {
-    ktfmt()
-    targetExclude("**/build/**")
+    ktfmt().kotlinlangStyle()
+      targetExclude("**/build/**")
   }
-  kotlinGradle { ktfmt() }
+  kotlinGradle { ktfmt().kotlinlangStyle() }
 }
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
