@@ -67,7 +67,7 @@ jobs:
           set -euo pipefail # 스크립트 오류 발생 시 즉시 중단
 
           echo "--- Starting Deployment on EC2 Runner: ${{ runner.name }} ---"
-          
+
           # 1. ECR 로그인
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
           echo "✅ ECR login successful."
@@ -107,6 +107,4 @@ jobs:
           echo "❌ Health check FAILED after multiple retries."
           echo "--- Displaying container logs for debugging ---"
           docker logs --tail 100 $CONTAINER_NAME
-          exit 1
-          echo "❌ Health check FAILED after multiple retries"
           exit 1
