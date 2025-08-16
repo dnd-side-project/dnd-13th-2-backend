@@ -19,7 +19,7 @@ RUN ./gradlew bootJar --no-daemon
 
 
 # --- 2단계: 최종 이미지 생성 스테이지 ---
-FROM amazoncorretto:17-alpine-jdk
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
