@@ -18,6 +18,7 @@ jobs:
       contents: read
     outputs:
       image_uri: ${{ steps.build-image.outputs.image }}
+      registry: ${{ steps.login-ecr.outputs.registry }}
 
     steps:
       - name: Checkout repository
@@ -78,7 +79,7 @@ jobs:
       - name: Deploy to EC2 instance via SSM Run Command
         env:
           IMAGE_URI: ${{ needs.build-and-push.outputs.image_uri }}
-          ECR_REGISTRY: ${{ needs.build-and-push.steps.login-ecr.outputs.registry }}
+          ECR_REGISTRY: ${{ needs.build-and-push.outputs.registry }}
         run: |
           aws ssm send-command \
             --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
