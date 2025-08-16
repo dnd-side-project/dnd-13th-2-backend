@@ -85,7 +85,7 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
-            --comment "Deploying new version ${{ env.IMAGE_URI }}" \
+            --comment "Deploying new version ${{ env.IMAGE_TAG }}" \
             --parameters 'commands=[
               "set -e",
               "# 1. ECR 로그인",
