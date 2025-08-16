@@ -23,8 +23,10 @@ FROM amazoncorretto:17-alpine-jre
 
 WORKDIR /app
 
+ENV JAVA_TOOL_OPTIONS="-Xms256m -Xmx1024m"
+
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Xms256m", "-Xmx1536m", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
