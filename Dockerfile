@@ -3,8 +3,8 @@ FROM gradle:8.5-jdk17 AS builder
 
 WORKDIR /app
 
-COPY gradlew .
-COPY gradle ./gradle
+COPY --chown=gradle:gradle gradlew .
+COPY --chown=gradle:gradle gradle ./gradle
 
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
