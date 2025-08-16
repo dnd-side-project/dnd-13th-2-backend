@@ -65,93 +65,49 @@ jobs:
   # 2. EC2에 배포
   deploy:
     needs: build-and-push
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    runs-on: self-hosted
 
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Deploy and Health Check on EC2 instance
+      - name: Deploy and Health Check on EC2
         env:
           IMAGE_URI: ${{ needs.build-and-push.outputs.image_uri }}
           ECR_REGISTRY: ${{ needs.build-and-push.outputs.registry }}
         run: |
-          # 1. SSM Run Command를 보내고 Command ID를 변수에 저장
-          COMMAND_ID=$(aws ssm send-command \
-            --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
-            --document-name "AWS-RunShellScript" \
-            --comment "Deploying new version ${{ env.IMAGE_TAG }}" \
-            --parameters 'commands=[
-              "set -e",
-              "# 1. ECR 로그인",
-              "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}",
-              "# 2. 최신 이미지 pull",
-              "docker pull ${{ env.IMAGE_URI }}",
-              "# 3. 기존 컨테이너 중지 및 삭제",
-              "if [ \"$(docker ps -a -q --filter name=${{ env.CONTAINER_NAME }})\" ]; then docker stop ${{ env.CONTAINER_NAME }} && docker rm ${{ env.CONTAINER_NAME }}; fi",
-              "# 4. 새 컨테이너 실행",
-              "docker run -d --name ${{ env.CONTAINER_NAME }} -p 80:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev ${{ env.IMAGE_URI }}",
-              "# 5. 헬스체크 스크립트",
-              "echo ''Waiting for application to start...''",
-              "sleep 10",
-              "for i in $(seq 1 10); do",
-              "  response=$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost/actuator/health || true)",
-              "  if [ \"$response\" = \"200\" ]; then",
-              "    echo ''Health check PASSED''",
-              "    exit 0",
-              "  else",
-              "    echo ''Health check failed with status '$response', retrying... ($i/10)''",
-              "    sleep 5",
-              "  fi",
-              "done",
-              "echo ''Health check FAILED after multiple retries''",
-              "exit 1"
-            ]' \
-            --query "Command.CommandId" --output text)
+          set -euo pipefail
 
-          # Command ID가 제대로 받아와졌는지 확인
-          if [ -z "$COMMAND_ID" ]; then
-            echo "Failed to get Command ID"
-            exit 1
+          echo "--- Starting Deployment on EC2 Runner: ${{ runner.name }} ---"
+
+          # 1. ECR 로그인
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
+          echo "ECR login successful."
+
+          # 2. 최신 이미지 pull
+          docker pull $IMAGE_URI
+          echo "Docker image pulled successfully."
+
+          # 3. 기존 컨테이너 중지 및 삭제
+          if [ "$(docker ps -a -q --filter name=${{ env.CONTAINER_NAME }})" ]; then
+            docker stop ${{ env.CONTAINER_NAME }}
+            docker rm ${{ env.CONTAINER_NAME }}
+            echo "Existing container stopped and removed."
           fi
 
-          echo "SSM Command sent with ID: $COMMAND_ID"
+          # 4. 새 컨테이너 실행
+          docker run -d --name ${{ env.CONTAINER_NAME }} -p 80:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev $IMAGE_URI
+          echo "New container started."
 
-          # 2. Command가 완료될 때까지 대기 (최대 5분)
-          aws ssm wait command-executed \
-            --command-id "$COMMAND_ID" \
-            --instance-id "${{ env.EC2_INSTANCE_ID }}" \
-            --max-attempts 60 \
-            --delay 5
+          # 5. 헬스체크
+          echo "Waiting for application health check..."
+          sleep 10
+          for i in $(seq 1 10); do
+            response=$(curl -s -o /dev/null -w '%{http_code}' http://localhost/actuator/health || true)
+            if [ "$response" = "200" ]; then
+              echo "✅ Health check PASSED"
+              exit 0
+            fi
+            echo "Health check failed with status '$response', retrying... ($i/10)"
+            sleep 10
+          done
 
-          # 3. Command의 최종 실행 결과를 가져옴
-          OUTPUT=$(aws ssm get-command-invocation \
-            --command-id "$COMMAND_ID" \
-            --instance-id "${{ env.EC2_INSTANCE_ID }}" \
-            --query "{Status:Status,StdOut:StandardOutputContent,StdErr:StandardErrorContent}" --output json)
-
-          STATUS=$(echo "$OUTPUT" | jq -r .Status)
-          STDOUT=$(echo "$OUTPUT" | jq -r .StdOut)
-          STDERR=$(echo "$OUTPUT" | jq -r .StdErr)
-          
-          echo "--- EC2 Script STDOUT ---"
-          echo "$STDOUT"
-          echo "-------------------------"
-
-          # 4. 결과에 따라 워크플로우 성공/실패 처리
-          if [ "$STATUS" = "Success" ]; then
-            echo "Deployment and health check successful!"
-            exit 0
-          else
-            echo "Deployment or health check failed with status: $STATUS"
-            echo "--- EC2 Script STDERR ---"
-            echo "$STDERR"
-            echo "-------------------------"
-            exit 1
-          fi
+          echo "❌ Health check FAILED after multiple retries"
+          exit 1
