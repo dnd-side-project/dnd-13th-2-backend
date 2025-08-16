@@ -19,7 +19,7 @@ RUN ./gradlew bootJar --no-daemon
 
 
 # --- 2단계: 최종 이미지 생성 스테이지 ---
-FROM amazoncorretto:17-alpine-jdk
+FROM amazoncorretto:17-alpine-jre
 
 WORKDIR /app
 
@@ -27,4 +27,4 @@ COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xms256m", "-Xmx1536m", "-jar", "app.jar"]
