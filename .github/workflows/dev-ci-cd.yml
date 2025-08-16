@@ -9,7 +9,6 @@ env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: dnd-project/app
   CONTAINER_NAME: dnd-app
-  EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
 
 jobs:
   # 1. 빌드 및 ECR 푸시
