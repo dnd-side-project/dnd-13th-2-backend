@@ -17,15 +17,12 @@ jobs:
     permissions:
       contents: read
     outputs:
-      image_uri: ${{ steps.build-image.outputs.image }}
+      image_uri: ${{ steps.build-image.outputs.image_uri }}
       registry: ${{ steps.login-ecr.outputs.registry }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -41,21 +38,20 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push Docker image for ARM64
+      - name: Build and push Docker image
         id: build-image
-        uses: docker/build-push-action@v5
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
-          platforms: linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            --output type=image,push=true \
+            --cache-from type=registry,ref=$ECR_REGISTRY/$ECR_REPOSITORY:buildcache \
+            --cache-to type=registry,ref=$ECR_REGISTRY/$ECR_REPOSITORY:buildcache,mode=max \
+            .
+          echo "image_uri=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   # 2. EC2에 배포
   deploy:
@@ -63,46 +59,52 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Deploy and Health Check on EC2
+      - name: Deploy to EC2
         env:
           IMAGE_URI: ${{ needs.build-and-push.outputs.image_uri }}
           ECR_REGISTRY: ${{ needs.build-and-push.outputs.registry }}
         run: |
-          set -euo pipefail
+          set -euo pipefail # 스크립트 오류 발생 시 즉시 중단
 
           echo "--- Starting Deployment on EC2 Runner: ${{ runner.name }} ---"
 
           # 1. ECR 로그인
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
-          echo "ECR login successful."
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+          echo "✅ ECR login successful."
 
           # 2. 최신 이미지 pull
           docker pull $IMAGE_URI
-          echo "Docker image pulled successfully."
+          echo "✅ Docker image pulled successfully: $IMAGE_URI"
 
           # 3. 기존 컨테이너 중지 및 삭제
-          if [ "$(docker ps -a -q --filter name=${{ env.CONTAINER_NAME }})" ]; then
-            docker stop ${{ env.CONTAINER_NAME }}
-            docker rm ${{ env.CONTAINER_NAME }}
-            echo "Existing container stopped and removed."
+          if [ "$(docker ps -a -q --filter name^/${CONTAINER_NAME}$)" ]; then
+            docker stop $CONTAINER_NAME
+            docker rm $CONTAINER_NAME
+            echo "✅ Existing container stopped and removed."
           fi
 
           # 4. 새 컨테이너 실행
-          docker run -d --name ${{ env.CONTAINER_NAME }} -p 80:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev $IMAGE_URI
-          echo "New container started."
+          docker run -d --name $CONTAINER_NAME -p 80:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev $IMAGE_URI
+          echo "✅ New container started."
 
-          # 5. 헬스체크
+          # 5. 사용하지 않는 Docker 이미지 정리
+          docker image prune -af
+          echo "✅ Unused docker images pruned."
+
+          # 6. 헬스체크
           echo "Waiting for application health check..."
-          sleep 10
-          for i in $(seq 1 10); do
-            response=$(curl -s -o /dev/null -w '%{http_code}' http://localhost/actuator/health || true)
+          sleep 15
+          for i in {1..12}; do
+            response=$(curl --max-time 5 -s -o /dev/null -w '%{http_code}' http://localhost/actuator/health || true)
             if [ "$response" = "200" ]; then
-              echo "✅ Health check PASSED"
+              echo "🚀 Health check PASSED. Deployment successful!"
               exit 0
             fi
-            echo "Health check failed with status '$response', retrying... ($i/10)"
+            echo "Health check failed with status '$response', retrying... ($i/12)"
             sleep 10
           done
 
-          echo "❌ Health check FAILED after multiple retries"
+          echo "❌ Health check FAILED after multiple retries."
+          echo "--- Displaying container logs for debugging ---"
+          docker logs --tail 100 $CONTAINER_NAME
           exit 1

@@ -19,9 +19,11 @@ RUN ./gradlew bootJar --no-daemon
 
 
 # --- 2단계: 최종 이미지 생성 스테이지 ---
-FROM amazoncorretto:17-alpine-jdk
+FROM amazoncorretto:17-alpine-jre
 
 WORKDIR /app
+
+ENV JAVA_TOOL_OPTIONS="-Xms256m -Xmx1024m"
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
