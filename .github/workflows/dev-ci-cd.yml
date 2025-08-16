@@ -8,6 +8,8 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: dnd-project/app
+  IMAGE_TAG: ${{ github.sha }}
+  CONTAINER_NAME: dnd-app
   EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
 
 jobs:
@@ -55,7 +57,6 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -85,7 +86,7 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
-            --comment "Deploying new version ${{ env.IMAGE_URI }}" \
+            --comment "Deploying new version ${{ env.IMAGE_TAG }}" \
             --parameters 'commands=[
               "set -e",
               "# 1. ECR 로그인",
@@ -93,9 +94,9 @@ jobs:
               "# 2. 최신 이미지 pull",
               "docker pull ${{ env.IMAGE_URI }}",
               "# 3. 기존 컨테이너 중지 및 삭제",
-              "if [ \"$(docker ps -a -q --filter name=dnd-app)\" ]; then docker stop dnd-app && docker rm dnd-app; fi",
+              "if [ \"$(docker ps -a -q --filter name=${{ env.CONTAINER_NAME }})\" ]; then docker stop ${{ env.CONTAINER_NAME }} && docker rm ${{ env.CONTAINER_NAME }}; fi",
               "# 4. 새 컨테이너 실행",
-              "docker run -d --name dnd-app -p 80:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev ${{ env.IMAGE_URI }}",
+              "docker run -d --name ${{ env.CONTAINER_NAME }} -p 80:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev ${{ env.IMAGE_URI }}",
               "# 5. 헬스체크 스크립트",
               "echo ''Waiting for application to start...''",
               "sleep 10",
