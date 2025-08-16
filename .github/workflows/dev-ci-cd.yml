@@ -51,7 +51,7 @@ jobs:
             --cache-from type=registry,ref=$ECR_REGISTRY/$ECR_REPOSITORY:buildcache \
             --cache-to type=registry,ref=$ECR_REGISTRY/$ECR_REPOSITORY:buildcache,mode=max \
             .
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image_uri=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   # 2. EC2에 배포
   deploy:
