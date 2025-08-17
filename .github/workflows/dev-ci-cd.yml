@@ -95,7 +95,7 @@ jobs:
           echo "Waiting for application health check..."
           sleep 15
           for i in {1..12}; do
-            response=$(curl --max-time 5 -s -o /dev/null -w '%{http_code}' http://localhost/actuator/health || true)
+            response=$(curl --max-time 5 -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health || true)
             if [ "$response" = "200" ]; then
               echo "🚀 Health check PASSED. Deployment successful!"
               exit 0
