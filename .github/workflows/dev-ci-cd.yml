@@ -77,7 +77,7 @@ jobs:
           echo "✅ Docker image pulled successfully: $IMAGE_URI"
 
           # 3. 기존 컨테이너 중지 및 삭제
-          if [ "$(docker ps -a -q --filter name^/${CONTAINER_NAME}$)" ]; then
+          if [ "$(docker ps -a -q --filter name=^/${CONTAINER_NAME}$)" ]; then
             docker stop $CONTAINER_NAME
             docker rm $CONTAINER_NAME
             echo "✅ Existing container stopped and removed."
