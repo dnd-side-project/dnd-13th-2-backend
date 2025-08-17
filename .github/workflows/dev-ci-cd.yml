@@ -84,7 +84,7 @@ jobs:
           fi
 
           # 4. 새 컨테이너 실행
-          docker run -d --name $CONTAINER_NAME -p 80:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev $IMAGE_URI
+          docker run -d --name $CONTAINER_NAME -p 8080:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev $IMAGE_URI
           echo "✅ New container started."
 
           # 5. 사용하지 않는 Docker 이미지 정리
