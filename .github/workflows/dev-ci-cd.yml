@@ -63,6 +63,7 @@ jobs:
         env:
           IMAGE_URI: ${{ needs.build-and-push.outputs.image_uri }}
           ECR_REGISTRY: ${{ needs.build-and-push.outputs.registry }}
+          HOST_PORT: 8080
         run: |
           set -euo pipefail # 스크립트 오류 발생 시 즉시 중단
 
@@ -84,7 +85,7 @@ jobs:
           fi
 
           # 4. 새 컨테이너 실행
-          docker run -d --name $CONTAINER_NAME -p 8080:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev $IMAGE_URI
+          docker run -d --name $CONTAINER_NAME -p $HOST_PORT:8080 --restart always -e SPRING_PROFILES_ACTIVE=dev $IMAGE_URI
           echo "✅ New container started."
 
           # 5. 사용하지 않는 Docker 이미지 정리
@@ -95,7 +96,7 @@ jobs:
           echo "Waiting for application health check..."
           sleep 15
           for i in {1..12}; do
-            response=$(curl --max-time 5 -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health || true)
+            response=$(curl --max-time 5 -s -o /dev/null -w '%{http_code}' http://localhost:$HOST_PORT/actuator/health || true)
             if [ "$response" = "200" ]; then
               echo "🚀 Health check PASSED. Deployment successful!"
               exit 0
