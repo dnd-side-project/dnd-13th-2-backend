@@ -14,9 +14,9 @@ class DailyRegionalPrice(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id", nullable = false)
     val region: Region,
-    @Column(name = "price") val price: Int,
+    @Column(name = "price", nullable = false) val price: Int,
     @Enumerated(EnumType.STRING) @Column(name = "market_type") val marketType: MarketType?,
-    @Column(name = "survey_date") val surveyDate: LocalDate,
+    @Column(name = "survey_date", nullable = false) val surveyDate: LocalDate,
 ) : BaseTimeEntity() {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null
 }
