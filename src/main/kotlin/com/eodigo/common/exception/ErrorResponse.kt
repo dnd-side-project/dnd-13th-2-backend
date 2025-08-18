@@ -7,11 +7,7 @@ package com.eodigo.common.exception
  * @property code 에러 코드
  * @property message 에러 메시지
  */
-data class ErrorResponse(
-    val status: Int,
-    val code: String,
-    val message: String,
-) {
+data class ErrorResponse(val status: Int, val code: String, val message: String) {
     companion object {
         /** ErrorCode를 기반으로 ErrorResponse 객체를 생성하는 정적 팩토리 메서드 */
         fun of(errorCode: ErrorCode): ErrorResponse {
