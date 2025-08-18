@@ -31,9 +31,18 @@ dependencies {
     // Environment Variable (.env)
     implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
 
+    // Spring Data JPA
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+    // MySQL Connector/J
+    runtimeOnly("com.mysql:mysql-connector-j")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // H2
+    testImplementation("com.h2database:h2")
 }
 
 kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
