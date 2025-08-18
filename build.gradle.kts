@@ -35,6 +35,9 @@ dependencies {
     // Spring Data JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
+    // Swagger UI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+
     // MySQL Connector/J
     runtimeOnly("com.mysql:mysql-connector-j")
 
