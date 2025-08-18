@@ -14,7 +14,9 @@ class Product(
     @Column(name = "item_name", nullable = false) val itemName: String,
     @Column(name = "kind_code") val kindCode: Int?,
     @Column(name = "kind_name") val kindName: String?,
-    @Column(name = "source", nullable = false) val source: ProductSource,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source", nullable = false)
+    val source: ProductSource,
 ) : BaseTimeEntity() {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null
 }
