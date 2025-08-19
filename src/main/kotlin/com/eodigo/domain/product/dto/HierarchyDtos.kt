@@ -2,8 +2,6 @@ package com.eodigo.domain.product.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
-data class ProductHierarchyResponse(val categories: List<CategoryInfo>)
-
 data class CategoryInfo(val categoryName: String, val categoryCode: Int, val items: List<ItemInfo>)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
