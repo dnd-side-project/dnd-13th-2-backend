@@ -5,16 +5,16 @@ import com.eodigo.domain.restaurant.dto.SearchRequest
 import com.eodigo.domain.restaurant.dto.StoreDetailDto
 import com.eodigo.domain.restaurant.dto.StoreDto
 import com.eodigo.domain.restaurant.enums.SortType
+import com.eodigo.domain.restaurant.exception.StoreNotFoundException
 import com.eodigo.domain.restaurant.repository.MenuRepository
 import com.eodigo.domain.restaurant.repository.StoreRepository
-import jakarta.persistence.EntityNotFoundException
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
-import org.springframework.data.repository.findByIdOrNull
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class StoreService(
@@ -90,7 +90,7 @@ class StoreService(
         // ID로 매장 정보 조회
         val store =
             storeRepository.findByIdOrNull(storeId)
-                ?: throw EntityNotFoundException("해당 ID의 매장을 찾을 수 없습니다: $storeId")
+                ?: throw StoreNotFoundException()
 
         // 해당 매장의 모든 메뉴 조회
         val menus = menuRepository.findAllByStoreId(storeId)
