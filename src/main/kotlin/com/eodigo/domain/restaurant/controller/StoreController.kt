@@ -1,6 +1,7 @@
 package com.eodigo.domain.restaurant.controller
 
 import com.eodigo.domain.restaurant.dto.SearchRequest
+import com.eodigo.domain.restaurant.dto.StoreDetailDto
 import com.eodigo.domain.restaurant.dto.StoreDto
 import com.eodigo.domain.restaurant.service.StoreService
 import jakarta.validation.Valid
@@ -20,5 +21,16 @@ class StoreController(private val storeService: StoreService) {
     ): ResponseEntity<List<StoreDto>> {
         val stores = storeService.searchStores(request)
         return ResponseEntity.ok(stores)
+    }
+
+    /** 매장 상세 정보 조회 */
+    @GetMapping("/{storeId}")
+    fun getStoreDetails(
+        @Valid @PathVariable storeId: Long,
+        latitude: Double,
+        longitude: Double,
+    ): ResponseEntity<StoreDetailDto> {
+        val storeDetails = storeService.getStoreDetails(storeId, latitude, longitude)
+        return ResponseEntity.ok(storeDetails)
     }
 }
