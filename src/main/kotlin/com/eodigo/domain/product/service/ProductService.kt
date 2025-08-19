@@ -19,6 +19,10 @@ class ProductService(
     private val annualNationalPriceRepository: AnnualNationalPriceRepository,
 ) {
 
+    companion object {
+        private const val UNKNOWN_KIND_NAME = "이름 없음"
+    }
+
     fun getProductHierarchy(): List<CategoryInfo> {
         val allProducts = productRepository.findAllByOrderByIdAsc()
 
@@ -51,8 +55,12 @@ class ProductService(
                                             kinds =
                                                 productsInItem.map { product ->
                                                     KindInfo(
-                                                        productId = product.id!!,
-                                                        kindName = product.kindName ?: "알 수 없음",
+                                                        productId =
+                                                            requireNotNull(product.id) {
+                                                                "Persisted Product.id must not be null"
+                                                            },
+                                                        kindName =
+                                                            product.kindName ?: UNKNOWN_KIND_NAME,
                                                     )
                                                 },
                                         )
