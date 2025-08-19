@@ -4,12 +4,12 @@ import com.eodigo.domain.restaurant.dto.SearchRequest
 import com.eodigo.domain.restaurant.dto.StoreDto
 import com.eodigo.domain.restaurant.enums.SortType
 import com.eodigo.domain.restaurant.repository.MenuRepository
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class StoreService(private val menuRepository: MenuRepository) {
