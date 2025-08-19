@@ -8,13 +8,13 @@ import com.eodigo.domain.restaurant.enums.SortType
 import com.eodigo.domain.restaurant.exception.StoreNotFoundException
 import com.eodigo.domain.restaurant.repository.MenuRepository
 import com.eodigo.domain.restaurant.repository.StoreRepository
-import org.springframework.data.repository.findByIdOrNull
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class StoreService(
@@ -88,9 +88,7 @@ class StoreService(
     @Transactional(readOnly = true)
     fun getStoreDetails(storeId: Long, latitude: Double, longitude: Double): StoreDetailDto {
         // ID로 매장 정보 조회
-        val store =
-            storeRepository.findByIdOrNull(storeId)
-                ?: throw StoreNotFoundException()
+        val store = storeRepository.findByIdOrNull(storeId) ?: throw StoreNotFoundException()
 
         // 해당 매장의 모든 메뉴 조회
         val menus = menuRepository.findAllByStoreId(storeId)
