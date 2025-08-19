@@ -1,18 +1,26 @@
 package com.eodigo.domain.restaurant.service
 
+import com.eodigo.domain.restaurant.dto.MenuDto
 import com.eodigo.domain.restaurant.dto.SearchRequest
+import com.eodigo.domain.restaurant.dto.StoreDetailDto
 import com.eodigo.domain.restaurant.dto.StoreDto
 import com.eodigo.domain.restaurant.enums.SortType
+import com.eodigo.domain.restaurant.exception.StoreNotFoundException
 import com.eodigo.domain.restaurant.repository.MenuRepository
+import com.eodigo.domain.restaurant.repository.StoreRepository
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class StoreService(private val menuRepository: MenuRepository) {
+class StoreService(
+    private val menuRepository: MenuRepository,
+    private val storeRepository: StoreRepository,
+) {
     @Transactional(readOnly = true)
     fun searchStores(request: SearchRequest): List<StoreDto> {
         // 메뉴명과 카테고리로 필터링
@@ -75,5 +83,38 @@ class StoreService(private val menuRepository: MenuRepository) {
                     sin(dLon / 2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return r * c
+    }
+
+    @Transactional(readOnly = true)
+    fun getStoreDetails(storeId: Long, latitude: Double, longitude: Double): StoreDetailDto {
+        // ID로 매장 정보 조회
+        val store = storeRepository.findByIdOrNull(storeId) ?: throw StoreNotFoundException()
+
+        // 해당 매장의 모든 메뉴 조회
+        val menus = menuRepository.findAllByStoreId(storeId)
+
+        val distance =
+            calculateDistance(
+                lat1 = latitude,
+                lon1 = longitude,
+                lat2 = store.latitude,
+                lon2 = store.longitude,
+            )
+
+        return StoreDetailDto(
+            storeId = storeId,
+            name = store.name,
+            distance = distance.toInt(),
+            category = store.category,
+            address = store.address,
+            latitude = store.latitude,
+            longitude = store.longitude,
+            imgUrl = store.imgUrl,
+            menus =
+                menus.map { menu ->
+                    val menuId = requireNotNull(menu.id)
+                    MenuDto(id = menuId, name = menu.name, price = menu.price)
+                },
+        )
     }
 }

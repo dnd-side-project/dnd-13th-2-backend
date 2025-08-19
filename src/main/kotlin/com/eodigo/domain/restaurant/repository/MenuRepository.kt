@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface MenuRepository : JpaRepository<Menu, Long> {
     fun findByNameContaining(keyword: String): List<Menu>
+
+    fun findAllByStoreId(storeId: Long): List<Menu>
 }
