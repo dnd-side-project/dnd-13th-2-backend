@@ -41,8 +41,9 @@ class StoreService(private val menuRepository: MenuRepository) {
                         lat2 = store.latitude,
                         lon2 = store.longitude,
                     )
+                val storeId = requireNotNull(store.id)
                 StoreDto(
-                    storeId = store.id!!,
+                    storeId = storeId,
                     storeName = store.name,
                     distance = distance.toInt(),
                     menuName = menu.name,
