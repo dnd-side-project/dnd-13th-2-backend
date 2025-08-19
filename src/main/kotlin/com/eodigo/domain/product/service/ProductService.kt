@@ -96,6 +96,10 @@ class ProductService(
         val allAnnualPrices =
             annualNationalPriceRepository.findByProductIdOrderBySurveyYearDesc(productId)
 
+        if (allAnnualPrices.isEmpty()) {
+            throw ProductTrendNotFoundException()
+        }
+
         val latestYear = allAnnualPrices.first().surveyYear
         val startYearOfLast10Years = latestYear - 9
         val last10YearsPrices = allAnnualPrices.filter { it.surveyYear >= startYearOfLast10Years }
