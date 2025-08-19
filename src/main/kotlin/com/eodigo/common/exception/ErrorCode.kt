@@ -21,4 +21,7 @@ enum class ErrorCode(val status: HttpStatus, val code: String, val message: Stri
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "상품을 찾을 수 없습니다."),
     PRODUCT_RANKING_NOT_FOUND(HttpStatus.NOT_FOUND, "P002", "가격 랭킹을 찾을 수 없습니다."),
     PRODUCT_TREND_NOT_FOUND(HttpStatus.NOT_FOUND, "P003", "가격 추이를 찾을 수 없습니다."),
+
+    // Restaurant
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "해당 매장을 찾을 수 없습니다."),
 }
