@@ -7,9 +7,7 @@ import org.springframework.core.env.MapPropertySource
 
 class DotenvInitializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
     override fun initialize(applicationContext: ConfigurableApplicationContext) {
-        val dotenv = Dotenv.configure()
-            .ignoreIfMissing()
-            .load()
+        val dotenv = Dotenv.configure().ignoreIfMissing().load()
 
         val dotenvMap = dotenv.entries().associate { it.key to it.value }
 

@@ -2,18 +2,17 @@ package com.eodigo.batch.reader
 
 import com.eodigo.batch.dto.KamisDailyPriceApiData
 import com.eodigo.external.kamis.KamisApiClient
-import com.eodigo.external.kamis.KamisDailyPriceItemDto
-import org.springframework.batch.item.ItemReader
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
+import org.springframework.batch.item.ItemReader
 
 class KamisDailyPriceApiReader(
     private val kamisApiClient: KamisApiClient,
     private val apiKey: String,
     private val certId: String,
     private val categoryCodes: List<String>,
-    private val regionCodes: List<String>
+    private val regionCodes: List<String>,
 ) : ItemReader<KamisDailyPriceApiData> {
 
     // 1. 처리할 모든 API 호출 결과(가격 아이템)를 담아둘 리스트
@@ -39,24 +38,27 @@ class KamisDailyPriceApiReader(
     private fun initialize() {
         allItems = mutableListOf()
         currentItemIndex = 0
-        val yesterday = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        val yesterday =
+            LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         // 당일 새벽에는 가격이 업데이트되지 않음
 
         for (categoryCode in categoryCodes) {
             for (regionCode in regionCodes) {
-                val response = kamisApiClient.getDailyPrices(
-                    certKey = apiKey,
-                    certId = certId,
-                    regDay = yesterday,
-                    categoryCode = categoryCode,
-                    countryCode = regionCode
-                )
+                val response =
+                    kamisApiClient.getDailyPrices(
+                        certKey = apiKey,
+                        certId = certId,
+                        regDay = yesterday,
+                        categoryCode = categoryCode,
+                        countryCode = regionCode,
+                    )
 
                 if (response?.data?.errorCode == "000") {
                     response.data.items?.let { items ->
-                        val wrappedItems = items.map { item ->
-                            KamisDailyPriceApiData(regionCode = regionCode, item = item)
-                        }
+                        val wrappedItems =
+                            items.map { item ->
+                                KamisDailyPriceApiData(regionCode = regionCode, item = item)
+                            }
                         allItems?.addAll(wrappedItems)
                     }
                 }

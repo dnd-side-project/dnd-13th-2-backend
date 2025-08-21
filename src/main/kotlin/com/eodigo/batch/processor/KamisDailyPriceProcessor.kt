@@ -8,21 +8,21 @@ import com.eodigo.domain.product.enums.MarketType
 import com.eodigo.domain.product.enums.ProductSource
 import com.eodigo.domain.product.repository.ProductRepository
 import com.eodigo.domain.product.repository.RegionRepository
-import com.eodigo.external.kamis.KamisDailyPriceItemDto
-import org.springframework.batch.item.ItemProcessor
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import org.springframework.batch.item.ItemProcessor
 
 class KamisDailyPriceProcessor(
     private val productRepository: ProductRepository,
     private val regionRepository: RegionRepository,
-    private val surveyDate: LocalDate
+    private val surveyDate: LocalDate,
 ) : ItemProcessor<KamisDailyPriceApiData, DailyRegionalPrice> {
 
     // 1. Product와 Region 정보를 메모리에 캐싱
     private val productCache: Map<String, Product> by lazy {
-        productRepository.findAllBySource(ProductSource.KAMIS)
-            .associateBy { createProductKey(it.itemCode, it.kindCode) }    }
+        productRepository.findAllBySource(ProductSource.KAMIS).associateBy {
+            createProductKey(it.itemCode, it.kindCode)
+        }
+    }
     private val regionCache: Map<Int, Region> by lazy {
         regionRepository.findAll().associateBy { it.regionCode }
     }
@@ -52,7 +52,7 @@ class KamisDailyPriceProcessor(
             region = region,
             price = priceStr.toInt(),
             surveyDate = surveyDate,
-            marketType = MarketType.RETAIL
+            marketType = MarketType.RETAIL,
         )
     }
 

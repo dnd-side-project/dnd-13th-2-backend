@@ -8,6 +8,7 @@ import com.eodigo.domain.product.repository.ProductRepository
 import com.eodigo.domain.product.repository.RegionRepository
 import com.eodigo.external.kamis.KamisApiClient
 import jakarta.persistence.EntityManagerFactory
+import java.time.LocalDate
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -21,7 +22,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
-import java.time.LocalDate
 
 @Configuration
 class KamisBatchConfiguration(
@@ -32,20 +32,18 @@ class KamisBatchConfiguration(
     private val regionRepository: RegionRepository,
     private val entityManagerFactory: EntityManagerFactory,
     @Value("\${kamis.api.key}") private val apiKey: String,
-    @Value("\${kamis.api.cert-id}") private val certId: String
+    @Value("\${kamis.api.cert-id}") private val certId: String,
 ) {
 
-companion object {
-    const val JOB_NAME = "kamisPriceSyncJob"
-    const val STEP_NAME = "kamisPriceSyncStep"
-    const val CHUNK_SIZE = 100
-}
+    companion object {
+        const val JOB_NAME = "kamisPriceSyncJob"
+        const val STEP_NAME = "kamisPriceSyncStep"
+        const val CHUNK_SIZE = 100
+    }
 
     @Bean
     fun kamisDailyPriceSyncJob(): Job {
-        return JobBuilder(JOB_NAME, jobRepository)
-            .start(kamisDailyPriceSyncStep())
-            .build()
+        return JobBuilder(JOB_NAME, jobRepository).start(kamisDailyPriceSyncStep()).build()
     }
 
     @Bean
@@ -61,16 +59,40 @@ companion object {
     @Bean
     fun kamisDailyPriceApiReader(): ItemReader<KamisDailyPriceApiData> {
         val categoryCodes = listOf("100", "200", "300", "400", "500", "600")
-        val regionCodes = listOf("1101", "2100", "2200", "2300", "2401", "2501", "2601", "3111",
-            "3214", "3211", "3311", "3511", "3711", "3911", "3113", "3613", "3714", "3814",
-            "3145", "2701", "3112", "3138", "3411", "3818")
+        val regionCodes =
+            listOf(
+                "1101",
+                "2100",
+                "2200",
+                "2300",
+                "2401",
+                "2501",
+                "2601",
+                "3111",
+                "3214",
+                "3211",
+                "3311",
+                "3511",
+                "3711",
+                "3911",
+                "3113",
+                "3613",
+                "3714",
+                "3814",
+                "3145",
+                "2701",
+                "3112",
+                "3138",
+                "3411",
+                "3818",
+            )
 
         return KamisDailyPriceApiReader(
             kamisApiClient = kamisApiClient,
             apiKey = apiKey,
             certId = certId,
             categoryCodes = categoryCodes,
-            regionCodes = regionCodes
+            regionCodes = regionCodes,
         )
     }
 
@@ -80,7 +102,7 @@ companion object {
         return KamisDailyPriceProcessor(
             productRepository = productRepository,
             regionRepository = regionRepository,
-            surveyDate = today
+            surveyDate = today,
         )
     }
 

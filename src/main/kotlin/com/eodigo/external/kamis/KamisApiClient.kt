@@ -3,7 +3,6 @@ package com.eodigo.external.kamis
 import com.eodigo.common.initializer.KamisProductInfoResponse
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
 
@@ -15,7 +14,9 @@ interface KamisApiClient {
         @RequestParam("p_cert_id") certId: String,
     ): KamisProductInfoResponse?
 
-    @GetExchange("/service/price/xml.do?action=dailyPriceByCategoryList&p_product_cls_code=01&p_returntype=json")
+    @GetExchange(
+        "/service/price/xml.do?action=dailyPriceByCategoryList&p_product_cls_code=01&p_returntype=json"
+    )
     fun getDailyPrices(
         @RequestParam("p_cert_key") certKey: String,
         @RequestParam("p_cert_id") certId: String,
@@ -28,14 +29,11 @@ interface KamisApiClient {
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class KamisDailyPriceResponse(
     val condition: List<Map<String, Any>>? = emptyList(), // condition 필드 추가 (내용물은 쓰지 않으므로 Map으로 받음)
-    val data: KamisDailyPriceData? = null
+    val data: KamisDailyPriceData? = null,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class KamisDailyPriceData(
-    val errorCode: String?,
-    val items: List<KamisDailyPriceItemDto>?
-) {
+data class KamisDailyPriceData(val errorCode: String?, val items: List<KamisDailyPriceItemDto>?) {
     companion object {
         @JvmStatic
         @JsonCreator
@@ -46,22 +44,23 @@ data class KamisDailyPriceData(
                     val errorCode = value["error_code"] as? String
                     val itemsNode = value["item"] as? List<*> ?: emptyList<Any>()
 
-                    val items = itemsNode.mapNotNull { itemMap ->
-                        if (itemMap is Map<*, *>) {
-                            KamisDailyPriceItemDto(
-                                itemName = itemMap["item_name"] as? String,
-                                itemCode = itemMap["item_code"] as? String,
-                                kindName = itemMap["kind_name"] as? String,
-                                kindCode = itemMap["kind_code"] as? String,
-                                rank = itemMap["rank"] as? String,
-                                rankCode = itemMap["rank_code"] as? String,
-                                unit = itemMap["unit"] as? String,
-                                price = itemMap["dpr1"] as? String
-                            )
-                        } else {
-                            null
+                    val items =
+                        itemsNode.mapNotNull { itemMap ->
+                            if (itemMap is Map<*, *>) {
+                                KamisDailyPriceItemDto(
+                                    itemName = itemMap["item_name"] as? String,
+                                    itemCode = itemMap["item_code"] as? String,
+                                    kindName = itemMap["kind_name"] as? String,
+                                    kindCode = itemMap["kind_code"] as? String,
+                                    rank = itemMap["rank"] as? String,
+                                    rankCode = itemMap["rank_code"] as? String,
+                                    unit = itemMap["unit"] as? String,
+                                    price = itemMap["dpr1"] as? String,
+                                )
+                            } else {
+                                null
+                            }
                         }
-                    }
                     KamisDailyPriceData(errorCode, items)
                 }
                 // 2. value가 배열(List)인 경우 (데이터 없음 또는 에러 케이스)
@@ -88,5 +87,5 @@ data class KamisDailyPriceItemDto(
     val rank: String?,
     val rankCode: String?,
     val unit: String?,
-    val price: String?
+    val price: String?,
 )
