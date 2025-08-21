@@ -54,6 +54,9 @@ dependencies {
     // H2
     testImplementation("com.h2database:h2")
 
+    // Spring Batch Test
+    testImplementation("org.springframework.batch:spring-batch-test")
+
     // Netty Resolver DNS (macOS)
     val isMac = System.getProperty("os.name").startsWith("Mac OS X")
     val architecture = System.getProperty("os.arch")
