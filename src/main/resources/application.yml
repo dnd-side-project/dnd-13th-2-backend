@@ -8,4 +8,4 @@ spring:
 kamis:
   api:
     key: ${KAMIS_API_KEY}
-    id: ${KAMIS_ID}
+    cert-id: ${KAMIS_ID}

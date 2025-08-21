@@ -20,7 +20,7 @@ class ProductMasterInitializer(
     private val productRepository: ProductRepository,
     private val kamisApiClient: KamisApiClient,
     @Value("\${kamis.api.key}") private val certKey: String,
-    @Value("\${kamis.api.id}") private val certId: String,
+    @Value("\${kamis.api.cert-id}") private val certId: String,
 ) : ApplicationRunner {
 
     private val log = LoggerFactory.getLogger(javaClass)
