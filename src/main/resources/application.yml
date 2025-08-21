@@ -5,4 +5,7 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
   jpa:
     open-in-view: false
-
+kamis:
+  api:
+    key: ${KAMIS_API_KEY}
+    id: ${KAMIS_ID}
