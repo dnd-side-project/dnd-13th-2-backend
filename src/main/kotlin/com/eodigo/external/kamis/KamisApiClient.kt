@@ -3,6 +3,7 @@ package com.eodigo.external.kamis
 import com.eodigo.common.initializer.KamisProductInfoResponse
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.service.annotation.GetExchange
 
@@ -24,11 +25,22 @@ interface KamisApiClient {
         @RequestParam("p_item_category_code") categoryCode: String,
         @RequestParam("p_country_code") countryCode: String,
     ): KamisDailyPriceResponse?
+
+    @GetExchange(
+        "/service/price/xml.do?action=yearlySalesList&p_productclscode=01&p_returntype=json"
+    )
+    fun getYearlyPrices(
+        @RequestParam("p_cert_key") certKey: String,
+        @RequestParam("p_cert_id") certId: String,
+        @RequestParam("p_yyyy") year: String,
+        @RequestParam("p_itemcode") itemCode: String,
+        @RequestParam("p_kindcode") kindCode: String,
+    ): String?
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class KamisDailyPriceResponse(
-    val condition: List<Map<String, Any>>? = emptyList(), // condition 필드 추가 (내용물은 쓰지 않으므로 Map으로 받음)
+    val condition: List<Map<String, Any>>? = emptyList(),
     val data: KamisDailyPriceData? = null,
 )
 
@@ -88,4 +100,17 @@ data class KamisDailyPriceItemDto(
     val rankCode: String?,
     val unit: String?,
     val price: String?,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class KamisYearlyPriceSectionDto(
+    @JsonProperty("productclscode") val productClsCode: String?,
+    val caption: String?,
+    @JsonProperty("item") val items: List<KamisYearlyPriceItemDto>?,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class KamisYearlyPriceItemDto(
+    val div: String?,
+    @JsonProperty("avg_data") val avgData: String?,
 )
