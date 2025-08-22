@@ -9,6 +9,7 @@ import com.eodigo.domain.product.enums.ProductSource
 import com.eodigo.domain.product.repository.ProductRepository
 import com.eodigo.domain.product.repository.RegionRepository
 import java.time.LocalDate
+import org.slf4j.LoggerFactory
 import org.springframework.batch.item.ItemProcessor
 
 class KamisDailyPriceProcessor(
@@ -16,6 +17,8 @@ class KamisDailyPriceProcessor(
     private val regionRepository: RegionRepository,
     private val surveyDate: LocalDate,
 ) : ItemProcessor<KamisDailyPriceApiData, DailyRegionalPrice> {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     // 1. Product와 Region 정보를 메모리에 캐싱
     private val productCache: Map<String, Product> by lazy {
@@ -42,7 +45,7 @@ class KamisDailyPriceProcessor(
 
         // 4. 매핑되는 Product나 Region이 없으면 무시
         if (product == null || region == null) {
-            // TODO: 로그를 남겨서 어떤 데이터가 매핑에 실패했는지 추적
+            log.error("Failed to match product or region: product: $product, region: $region")
             return null
         }
 

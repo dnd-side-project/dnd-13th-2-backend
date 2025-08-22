@@ -36,8 +36,8 @@ class KamisDailyPriceBatchConfiguration(
 ) {
 
     companion object {
-        const val JOB_NAME = "kamisPriceSyncJob"
-        const val STEP_NAME = "kamisPriceSyncStep"
+        const val JOB_NAME = "kamisDailyPriceSyncJob"
+        const val STEP_NAME = "kamisDailyPriceSyncStep"
         const val CHUNK_SIZE = 100
     }
 
