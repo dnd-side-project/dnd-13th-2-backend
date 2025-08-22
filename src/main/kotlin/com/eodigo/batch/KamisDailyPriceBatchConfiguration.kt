@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
 
 @Configuration
-class KamisBatchConfiguration(
+class KamisDailyPriceBatchConfiguration(
     private val jobRepository: JobRepository,
     private val transactionManager: PlatformTransactionManager,
     private val kamisApiClient: KamisApiClient,
