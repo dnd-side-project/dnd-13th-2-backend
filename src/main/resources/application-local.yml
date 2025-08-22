@@ -6,6 +6,8 @@ spring:
     password: ${DB_PASSWORD}
 
   jpa:
+    defer-datasource-initialization: true
+
     properties:
       hibernate:
         show_sql: true
