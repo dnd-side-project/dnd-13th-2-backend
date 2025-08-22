@@ -19,3 +19,8 @@ spring:
       initialize-schema: always
     job:
       enabled: false
+
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-local.sql
