@@ -27,7 +27,7 @@ class KamisDailyPriceProcessor(
         }
     }
     private val regionCache: Map<String, Region> by lazy {
-        regionRepository.findAll().associateBy { it.regionCode }
+        regionRepository.findAll().associateBy { it.code }
     }
 
     override fun process(wrapper: KamisDailyPriceApiData): DailyRegionalPrice? {
