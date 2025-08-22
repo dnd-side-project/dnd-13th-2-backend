@@ -23,7 +23,7 @@ class KamisDailyPriceProcessor(
             createProductKey(it.itemCode, it.kindCode)
         }
     }
-    private val regionCache: Map<Int, Region> by lazy {
+    private val regionCache: Map<String, Region> by lazy {
         regionRepository.findAll().associateBy { it.regionCode }
     }
 
@@ -36,9 +36,9 @@ class KamisDailyPriceProcessor(
         }
 
         // 3. 캐시에서 Product와 Region 엔티티를 찾음
-        val productKey = createProductKey(item.itemCode!!.toInt(), item.kindCode!!.toInt())
+        val productKey = createProductKey(item.itemCode, item.kindCode)
         val product = productCache[productKey]
-        val region = regionCache[wrapper.regionCode.toInt()]
+        val region = regionCache[wrapper.regionCode]
 
         // 4. 매핑되는 Product나 Region이 없으면 무시
         if (product == null || region == null) {
@@ -56,7 +56,7 @@ class KamisDailyPriceProcessor(
         )
     }
 
-    private fun createProductKey(itemCode: Int, kindCode: Int?): String {
-        return "$itemCode-${kindCode ?: "null"}"
+    private fun createProductKey(itemCode: String?, kindCode: String?): String {
+        return "$itemCode-$kindCode"
     }
 }

@@ -72,11 +72,11 @@ data class KamisProductInfoDto(
 
         return Product(
             name = productName.trim(),
-            categoryCode = categoryCode.toInt(),
+            categoryCode = categoryCode,
             categoryName = categoryName,
-            itemCode = itemCode.toInt(),
+            itemCode = itemCode,
             itemName = itemName,
-            kindCode = kindCode?.toIntOrNull(),
+            kindCode = kindCode,
             kindName = if (kindName.isNullOrBlank() || kindName == "없음") null else kindName,
             source = ProductSource.KAMIS,
         )
