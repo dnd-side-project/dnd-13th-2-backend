@@ -11,15 +11,3 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
-
-  batch:
-    jdbc:
-      initialize-schema: never
-    job:
-      enabled: false
-
-kamis:
-  api:
-    key: ${KAMIS_API_KEY}
-    cert-id: ${KAMIS_ID}
-
