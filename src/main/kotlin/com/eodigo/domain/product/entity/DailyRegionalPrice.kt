@@ -6,7 +6,16 @@ import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
-@Table(name = "daily_regional_price")
+@Table(
+    name = "daily_regional_price",
+    uniqueConstraints =
+        [
+            UniqueConstraint(
+                name = "uk_daily_price_product_region_date_market",
+                columnNames = ["product_id", "region_id", "survey_date", "market_type"],
+            )
+        ],
+)
 class DailyRegionalPrice(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
@@ -16,7 +25,9 @@ class DailyRegionalPrice(
     val region: Region,
     @Column(name = "survey_date", nullable = false) val surveyDate: LocalDate,
     @Column(name = "price", nullable = false) val price: Int,
-    @Enumerated(EnumType.STRING) @Column(name = "market_type") val marketType: MarketType?,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "market_type", nullable = false)
+    val marketType: MarketType = MarketType.RETAIL,
 ) : BaseTimeEntity() {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null
 }

@@ -11,3 +11,12 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
+
+  batch:
+    job:
+      enabled: false
+
+kamis:
+  api:
+    key: dummy-key
+    cert-id: dummy-id

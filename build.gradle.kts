@@ -41,12 +41,31 @@ dependencies {
     // MySQL Connector/J
     runtimeOnly("com.mysql:mysql-connector-j")
 
+    // Spring Batch
+    implementation("org.springframework.boot:spring-boot-starter-batch")
+
+    // Spring Webflux
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    // Jackson
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // H2
     testImplementation("com.h2database:h2")
+
+    // Spring Batch Test
+    testImplementation("org.springframework.batch:spring-batch-test")
+
+    // Netty Resolver DNS (macOS)
+    val isMac = System.getProperty("os.name").startsWith("Mac OS X")
+    val architecture = System.getProperty("os.arch")
+    if (isMac && architecture == "aarch64") {
+        developmentOnly("io.netty:netty-resolver-dns-native-macos:4.1.123.Final:osx-aarch_64")
+    }
 }
 
 kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }

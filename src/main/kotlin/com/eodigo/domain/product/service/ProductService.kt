@@ -18,7 +18,11 @@ class ProductService {
         val cabbage = ItemInfo(itemName = "배추", productId = null, kinds = kindsForCabbage)
         val potato = ItemInfo(itemName = "감자", productId = 58, kinds = null)
         val vegetables =
-            CategoryInfo(categoryName = "채소류", categoryCode = 200, items = listOf(cabbage, potato))
+            CategoryInfo(
+                categoryName = "채소류",
+                categoryCode = "200",
+                items = listOf(cabbage, potato),
+            )
 
         val kindsForBeef =
             listOf(
@@ -26,13 +30,16 @@ class ProductService {
                 KindInfo(productId = 85, kindName = "갈비"),
             )
         val beef = ItemInfo(itemName = "소", productId = null, kinds = kindsForBeef)
-        val livestock = CategoryInfo(categoryName = "축산물", categoryCode = 500, items = listOf(beef))
+        val livestock =
+            CategoryInfo(categoryName = "축산물", categoryCode = "500", items = listOf(beef))
 
-        val foodCrops = CategoryInfo(categoryName = "식량작물", categoryCode = 100, items = emptyList())
+        val foodCrops =
+            CategoryInfo(categoryName = "식량작물", categoryCode = "100", items = emptyList())
         val specialCrops =
-            CategoryInfo(categoryName = "특용작물", categoryCode = 300, items = emptyList())
-        val fruits = CategoryInfo(categoryName = "과일류", categoryCode = 400, items = emptyList())
-        val fisheries = CategoryInfo(categoryName = "수산물", categoryCode = 600, items = emptyList())
+            CategoryInfo(categoryName = "특용작물", categoryCode = "300", items = emptyList())
+        val fruits = CategoryInfo(categoryName = "과일류", categoryCode = "400", items = emptyList())
+        val fisheries =
+            CategoryInfo(categoryName = "수산물", categoryCode = "600", items = emptyList())
 
         val allCategories =
             listOf(foodCrops, vegetables, specialCrops, fruits, livestock, fisheries)

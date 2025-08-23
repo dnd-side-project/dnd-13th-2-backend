@@ -8,11 +8,11 @@ import jakarta.persistence.*
 @Table(name = "product")
 class Product(
     @Column(name = "name", nullable = false) val name: String,
-    @Column(name = "category_code", nullable = false) val categoryCode: Int,
+    @Column(name = "category_code", nullable = false) val categoryCode: String,
     @Column(name = "category_name", nullable = false) val categoryName: String,
-    @Column(name = "item_code", nullable = false) val itemCode: Int,
+    @Column(name = "item_code", nullable = false) val itemCode: String,
     @Column(name = "item_name", nullable = false) val itemName: String,
-    @Column(name = "kind_code") val kindCode: Int?,
+    @Column(name = "kind_code") val kindCode: String?,
     @Column(name = "kind_name") val kindName: String?,
     @Enumerated(EnumType.STRING)
     @Column(name = "source", nullable = false)
