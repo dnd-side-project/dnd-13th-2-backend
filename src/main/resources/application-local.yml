@@ -4,10 +4,30 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
   jpa:
+    defer-datasource-initialization: true
+
     properties:
       hibernate:
         show_sql: true
         format_sql: true
+
     hibernate:
       ddl-auto: update
+
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-local.sql
+
+kamis:
+  api:
+    key: ${KAMIS_API_KEY}
+    cert-id: ${KAMIS_ID}

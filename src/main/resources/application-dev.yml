@@ -4,6 +4,7 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
   jpa:
     properties:
       hibernate:
@@ -11,3 +12,14 @@ spring:
         format_sql: true
     hibernate:
       ddl-auto: validate
+
+  batch:
+    jdbc:
+      initialize-schema: never
+    job:
+      enabled: false
+
+kamis:
+  api:
+    key: ${KAMIS_API_KEY}
+    cert-id: ${KAMIS_ID}
