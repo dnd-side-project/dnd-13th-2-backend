@@ -6,7 +6,16 @@ import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
-@Table(name = "daily_regional_price")
+@Table(
+    name = "daily_regional_price",
+    uniqueConstraints =
+        [
+            UniqueConstraint(
+                name = "uk_daily_price_product_region_date_market",
+                columnNames = ["product_id", "region_id", "survey_date", "market_type"],
+            )
+        ],
+)
 class DailyRegionalPrice(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
