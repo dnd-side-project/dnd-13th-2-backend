@@ -16,7 +16,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import reactor.netty.http.client.HttpClient
 
 @Configuration
-class WebClientConfig {
+class WebClientConfig(private val objectMapper: ObjectMapper) {
 
     @Bean
     fun webClient(): WebClient {
@@ -29,11 +29,11 @@ class WebClientConfig {
         val exchangeStrategies =
             ExchangeStrategies.builder()
                 .codecs { configurer ->
+                    configurer.defaultCodecs()
+
                     configurer
-                        .defaultCodecs()
-                        .jackson2JsonDecoder(
-                            Jackson2JsonDecoder(ObjectMapper(), MediaType.TEXT_PLAIN)
-                        )
+                        .customCodecs()
+                        .register(Jackson2JsonDecoder(objectMapper, MediaType.TEXT_PLAIN))
                 }
                 .build()
 
