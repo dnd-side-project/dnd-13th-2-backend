@@ -5,7 +5,16 @@ import com.eodigo.domain.product.enums.MarketType
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "annual_national_price")
+@Table(
+    name = "annual_national_price",
+    uniqueConstraints =
+        [
+            UniqueConstraint(
+                name = "uk_annual_price_product_year_market",
+                columnNames = ["product_id", "survey_year", "market_type"],
+            )
+        ],
+)
 class AnnualNationalPrice(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
