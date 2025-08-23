@@ -26,3 +26,8 @@ spring:
     init:
       mode: always
       data-locations: classpath:data-local.sql
+
+kamis:
+  api:
+    key: ${KAMIS_API_KEY}
+    cert-id: ${KAMIS_ID}
