@@ -50,6 +50,7 @@ class BatchJobController(
                     when {
                         surveyDate.isNullOrEmpty() ->
                             LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE)
+
                         !isIsoLocalDate(surveyDate) -> throw InvalidInputValueException()
                         else -> surveyDate
                     }
@@ -61,6 +62,8 @@ class BatchJobController(
             jobLauncher.run(job, jobParameters)
 
             ResponseEntity.ok("Batch job '$jobName' has been started.")
+        } catch (e: InvalidInputValueException) {
+            throw InvalidInputValueException()
         } catch (e: Exception) {
             ResponseEntity.internalServerError()
                 .body("Failed to start batch job '$jobName'. Reason: ${e.message}")
