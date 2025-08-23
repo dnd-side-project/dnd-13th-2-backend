@@ -8,6 +8,6 @@ interface AnnualNationalPriceRepository : JpaRepository<AnnualNationalPrice, Lon
     fun findByProductIdAndSurveyYearAndMarketType(
         productId: Long,
         surveyYear: Int,
-        marketType: MarketType?,
+        marketType: MarketType,
     ): AnnualNationalPrice?
 }

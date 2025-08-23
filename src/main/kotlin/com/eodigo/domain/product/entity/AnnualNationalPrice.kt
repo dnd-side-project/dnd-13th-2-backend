@@ -21,7 +21,9 @@ class AnnualNationalPrice(
     val product: Product,
     @Column(name = "survey_year", nullable = false) val surveyYear: Int,
     @Column(name = "price", nullable = false) var price: Int,
-    @Enumerated(EnumType.STRING) @Column(name = "market_type") val marketType: MarketType?,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "market_type", nullable = false)
+    val marketType: MarketType,
 ) : BaseTimeEntity() {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null
 

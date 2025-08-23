@@ -16,7 +16,9 @@ class DailyRegionalPrice(
     val region: Region,
     @Column(name = "survey_date", nullable = false) val surveyDate: LocalDate,
     @Column(name = "price", nullable = false) val price: Int,
-    @Enumerated(EnumType.STRING) @Column(name = "market_type") val marketType: MarketType?,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "market_type", nullable = false)
+    val marketType: MarketType,
 ) : BaseTimeEntity() {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null
 }
