@@ -57,6 +57,8 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: self-hosted
+    environment:
+      name: dev
 
     steps:
       - name: Deploy to EC2
