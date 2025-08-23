@@ -26,6 +26,7 @@ class AnnualNationalPrice(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null
 
     fun updatePrice(newPrice: Int) {
+        require(newPrice >= 0) { "price는 음수가 될 수 없습니다." }
         this.price = newPrice
     }
 }
