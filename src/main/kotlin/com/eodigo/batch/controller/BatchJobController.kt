@@ -1,6 +1,8 @@
 package com.eodigo.batch.controller
 
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobParametersBuilder
 import org.springframework.batch.core.launch.JobLauncher
@@ -25,10 +27,16 @@ class BatchJobController(
         return try {
             val job = applicationContext.getBean(jobName, Job::class.java)
 
-            val jobParameters =
-                JobParametersBuilder()
-                    .addLocalDateTime("run.time", LocalDateTime.now())
-                    .toJobParameters()
+            val jobParametersBuilder =
+                JobParametersBuilder().addLocalDateTime("run.time", LocalDateTime.now())
+
+            if (jobName == "kamisDailyPriceSyncJob") {
+                val surveyDate =
+                    LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE)
+                jobParametersBuilder.addString("surveyDate", surveyDate)
+            }
+
+            val jobParameters = jobParametersBuilder.toJobParameters()
 
             jobLauncher.run(job, jobParameters)
 

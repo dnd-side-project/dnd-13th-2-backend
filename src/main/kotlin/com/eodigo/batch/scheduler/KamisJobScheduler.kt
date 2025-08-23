@@ -1,6 +1,8 @@
 package com.eodigo.batch.scheduler
 
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobParametersBuilder
@@ -24,9 +26,12 @@ class KamisJobScheduler(
     fun runDailyPriceSyncJob() {
         log.info("Starting kamisDailyPriceSyncJob by scheduler...")
         try {
+            val surveyDate = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE)
+
             val jobParameters =
                 JobParametersBuilder()
                     .addLocalDateTime("run.time", LocalDateTime.now())
+                    .addString("surveyDate", surveyDate)
                     .toJobParameters()
             jobLauncher.run(dailyPriceSyncJob, jobParameters)
         } catch (e: Exception) {

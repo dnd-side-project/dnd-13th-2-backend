@@ -12,6 +12,7 @@ class KamisDailyPriceApiReader(
     private val certId: String,
     private val categoryCodes: List<String>,
     private val regionCodes: List<String>,
+    private val surveyDate: LocalDate,
 ) : ItemReader<KamisDailyPriceApiData> {
 
     // 1. 처리할 모든 API 호출 결과(가격 아이템)를 담아둘 리스트
@@ -39,9 +40,8 @@ class KamisDailyPriceApiReader(
     private fun initialize() {
         allItems = mutableListOf()
         currentItemIndex = 0
-        val yesterday =
-            LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-        // 당일 새벽에는 가격이 업데이트되지 않음
+
+        val regDay = surveyDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
         for (categoryCode in categoryCodes) {
             for (regionCode in regionCodes) {
@@ -49,7 +49,7 @@ class KamisDailyPriceApiReader(
                     kamisApiClient.getDailyPrices(
                         certKey = apiKey,
                         certId = certId,
-                        regDay = yesterday,
+                        regDay = regDay,
                         categoryCode = categoryCode,
                         countryCode = regionCode,
                     )

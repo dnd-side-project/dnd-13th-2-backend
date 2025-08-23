@@ -9,8 +9,10 @@ import com.eodigo.domain.product.repository.RegionRepository
 import com.eodigo.external.kamis.KamisApiClient
 import jakarta.persistence.EntityManagerFactory
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
+import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
@@ -50,14 +52,21 @@ class KamisDailyPriceBatchConfiguration(
     fun kamisDailyPriceSyncStep(): Step {
         return StepBuilder(STEP_NAME, jobRepository)
             .chunk<KamisDailyPriceApiData, DailyRegionalPrice>(CHUNK_SIZE, transactionManager)
-            .reader(kamisDailyPriceApiReader())
-            .processor(kamisDailyPriceProcessor())
+            .reader(kamisDailyPriceApiReader(null))
+            .processor(kamisDailyPriceProcessor(null))
             .writer(kamisDailyPriceJpaWriter())
             .build()
     }
 
     @Bean
-    fun kamisDailyPriceApiReader(): ItemReader<KamisDailyPriceApiData> {
+    @StepScope
+    fun kamisDailyPriceApiReader(
+        @Value("#{jobParameters['surveyDate']}") surveyDateString: String?
+    ): ItemReader<KamisDailyPriceApiData> {
+        val surveyDate =
+            surveyDateString?.let { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
+                ?: throw IllegalArgumentException("surveyDate job parameter is required")
+
         val categoryCodes = listOf("100", "200", "300", "400", "500", "600")
         val regionCodes =
             listOf(
@@ -93,16 +102,23 @@ class KamisDailyPriceBatchConfiguration(
             certId = certId,
             categoryCodes = categoryCodes,
             regionCodes = regionCodes,
+            surveyDate = surveyDate,
         )
     }
 
     @Bean
-    fun kamisDailyPriceProcessor(): ItemProcessor<KamisDailyPriceApiData, DailyRegionalPrice> {
-        val today = LocalDate.now()
+    @StepScope
+    fun kamisDailyPriceProcessor(
+        @Value("#{jobParameters['surveyDate']}") surveyDateString: String?
+    ): ItemProcessor<KamisDailyPriceApiData, DailyRegionalPrice> {
+        val surveyDate =
+            surveyDateString?.let { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
+                ?: throw IllegalArgumentException("surveyDate job parameter is required")
+
         return KamisDailyPriceProcessor(
             productRepository = productRepository,
             regionRepository = regionRepository,
-            surveyDate = today,
+            surveyDate = surveyDate,
         )
     }
 
