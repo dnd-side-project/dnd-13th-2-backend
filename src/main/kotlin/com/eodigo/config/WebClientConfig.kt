@@ -2,6 +2,8 @@ package com.eodigo.config
 
 import com.eodigo.external.kamis.KamisApiClient
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.netty.channel.ChannelOption
+import java.time.Duration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
@@ -18,7 +20,11 @@ class WebClientConfig {
 
     @Bean
     fun webClient(): WebClient {
-        val httpClient = HttpClient.create().followRedirect(true)
+        val httpClient =
+            HttpClient.create()
+                .followRedirect(true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofSeconds(10))
 
         val exchangeStrategies =
             ExchangeStrategies.builder()
@@ -30,6 +36,7 @@ class WebClientConfig {
                         )
                 }
                 .build()
+
         return WebClient.builder()
             .baseUrl("http://www.kamis.or.kr")
             .clientConnector(ReactorClientHttpConnector(httpClient))
