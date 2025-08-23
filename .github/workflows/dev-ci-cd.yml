@@ -71,6 +71,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           KAMIS_API_KEY: ${{ secrets.KAMIS_API_KEY }}
           KAMIS_ID: ${{ secrets.KAMIS_ID }}
+          ADMIN_API_KEY: ${{secrets.ADMIN_API_KEY}}
         run: |
           set -euo pipefail # 스크립트 오류 발생 시 즉시 중단
 
@@ -99,6 +100,7 @@ jobs:
           -e DB_PASSWORD="$DB_PASSWORD" \
           -e KAMIS_API_KEY="$KAMIS_API_KEY" \
           -e KAMIS_ID="$KAMIS_ID" \
+          -e ADMIN_API_KEY="$ADMIN_API_KEY" \
           $IMAGE_URI
           echo "✅ New container started."
 
