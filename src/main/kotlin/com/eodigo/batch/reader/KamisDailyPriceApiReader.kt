@@ -30,8 +30,10 @@ class KamisDailyPriceApiReader(
             return null
         }
 
+        val list = allItems ?: return null
+
         // 5. 현재 인덱스의 아이템을 반환하고, 인덱스를 1 증가시킴
-        return allItems!![currentItemIndex++]
+        return list[currentItemIndex++]
     }
 
     private fun initialize() {
