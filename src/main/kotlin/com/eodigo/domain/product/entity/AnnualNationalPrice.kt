@@ -23,7 +23,7 @@ class AnnualNationalPrice(
     @Column(name = "price", nullable = false) var price: Int,
     @Enumerated(EnumType.STRING)
     @Column(name = "market_type", nullable = false)
-    val marketType: MarketType,
+    val marketType: MarketType = MarketType.RETAIL,
 ) : BaseTimeEntity() {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null
 
