@@ -1,5 +1,8 @@
 package com.eodigo.batch.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@Tag(name = "배치 API", description = "배치 잡 수동 실행용 API")
 @RestController
 @RequestMapping("/api/v1/batch")
 @Profile("local", "dev")
@@ -22,8 +26,13 @@ class BatchJobController(
     private val applicationContext: ApplicationContext,
 ) {
 
+    @Operation(summary = "배치 잡 수동 실행", description = "지정된 이름의 배치 잡을 즉시 실행합니다.")
     @PostMapping("/run/{jobName}")
-    fun runBatchJob(@PathVariable jobName: String): ResponseEntity<String> {
+    fun runBatchJob(
+        @Parameter(description = "실행할 Job의 Bean 이름", example = "kamisDailyPriceSyncJob")
+        @PathVariable
+        jobName: String
+    ): ResponseEntity<String> {
         return try {
             val job = applicationContext.getBean(jobName, Job::class.java)
 

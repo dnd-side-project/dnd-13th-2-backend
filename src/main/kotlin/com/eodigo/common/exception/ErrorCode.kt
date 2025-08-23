@@ -17,6 +17,11 @@ enum class ErrorCode(val status: HttpStatus, val code: String, val message: Stri
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "요청 값의 타입이 유효하지 않습니다."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "접근 권한이 없습니다."),
 
+    // Product
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "상품을 찾을 수 없습니다."),
+    PRODUCT_RANKING_NOT_FOUND(HttpStatus.NOT_FOUND, "P002", "가격 랭킹을 찾을 수 없습니다."),
+    PRODUCT_TREND_NOT_FOUND(HttpStatus.NOT_FOUND, "P003", "가격 추이를 찾을 수 없습니다."),
+
     // Restaurant
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "해당 매장을 찾을 수 없습니다."),
 }
