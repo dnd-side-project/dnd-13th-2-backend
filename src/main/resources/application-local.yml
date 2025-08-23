@@ -31,3 +31,6 @@ kamis:
   api:
     key: ${KAMIS_API_KEY}
     cert-id: ${KAMIS_ID}
+
+admin:
+  api-key: default_api_key

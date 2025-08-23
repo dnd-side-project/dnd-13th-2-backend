@@ -20,3 +20,6 @@ kamis:
   api:
     key: dummy-key
     cert-id: dummy-id
+
+admin:
+  api-key: default_api_key
