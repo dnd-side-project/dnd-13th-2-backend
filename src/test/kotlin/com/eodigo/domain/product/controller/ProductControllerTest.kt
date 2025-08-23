@@ -2,13 +2,14 @@ package com.eodigo.domain.product.controller
 
 import com.eodigo.common.exception.ErrorCode
 import com.eodigo.common.exception.GlobalExceptionHandler
+import com.eodigo.domain.product.dto.AnnualPriceInfo
 import com.eodigo.domain.product.dto.CategoryInfo
 import com.eodigo.domain.product.dto.ProductRankingResponse
 import com.eodigo.domain.product.dto.ProductTrendResponse
+import com.eodigo.domain.product.dto.RegionalPriceInfo
 import com.eodigo.domain.product.exception.ProductNotFoundException
 import com.eodigo.domain.product.exception.ProductRankingNotFoundException
 import com.eodigo.domain.product.service.ProductService
-import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -46,7 +47,7 @@ internal class ProductControllerTest {
     fun getProductHierarchy_Success() {
         // given
         val mockResponse =
-            listOf(CategoryInfo(categoryName = "채소류", categoryCode = 200, items = emptyList()))
+            listOf(CategoryInfo(categoryName = "채소류", categoryCode = "200", items = emptyList()))
         given(productService.getProductHierarchy()).willReturn(mockResponse)
 
         // when & then
@@ -64,12 +65,9 @@ internal class ProductControllerTest {
         val productId = 1L
         val mockResponse =
             ProductTrendResponse(
-                productId = productId,
                 productName = "테스트상품",
-                startYear = 2016,
-                endYear = 2025,
                 inflationRate = 50.0,
-                annualData = emptyList(),
+                annualData = listOf(AnnualPriceInfo(2025, 15000)),
             )
         given(productService.getProductTrend(productId)).willReturn(mockResponse)
 
@@ -81,9 +79,9 @@ internal class ProductControllerTest {
             )
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.productId").value(productId))
             .andExpect(jsonPath("$.productName").value("테스트상품"))
             .andExpect(jsonPath("$.inflationRate").value(50.0))
+            .andExpect(jsonPath("$.annualData[0].year").value(2025))
     }
 
     @Test
@@ -93,10 +91,8 @@ internal class ProductControllerTest {
         val productId = 1L
         val mockResponse =
             ProductRankingResponse(
-                productId = productId,
                 productName = "테스트상품",
-                surveyDate = LocalDate.now(),
-                ranking = emptyList(),
+                ranking = listOf(RegionalPriceInfo("서울", 3000)),
             )
         given(productService.getProductRanking(productId)).willReturn(mockResponse)
 
@@ -107,8 +103,8 @@ internal class ProductControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.productId").value(productId))
             .andExpect(jsonPath("$.productName").value("테스트상품"))
+            .andExpect(jsonPath("$.ranking[0].regionName").value("서울"))
     }
 
     @Test

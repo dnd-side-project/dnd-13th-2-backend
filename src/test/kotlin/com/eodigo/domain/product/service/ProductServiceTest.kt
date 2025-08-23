@@ -1,5 +1,6 @@
 package com.eodigo.domain.product.service
 
+import com.eodigo.domain.product.dto.RegionalPriceInfo
 import com.eodigo.domain.product.entity.AnnualNationalPrice
 import com.eodigo.domain.product.entity.DailyRegionalPrice
 import com.eodigo.domain.product.entity.Product
@@ -23,14 +24,12 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 
-@ExtendWith(MockitoExtension::class) // 1. JUnit5에서 Mockito를 사용하기 위한 확장
+@ExtendWith(MockitoExtension::class)
 internal class ProductServiceTest {
 
-    @InjectMocks // 2. 테스트 대상 객체. @Mock으로 만든 가짜 객체들이 여기에 주입됩니다.
-    private lateinit var productService: ProductService
+    @InjectMocks private lateinit var productService: ProductService
 
-    @Mock // 3. 가짜(Mock) 객체로 만들 의존성
-    private lateinit var productRepository: ProductRepository
+    @Mock private lateinit var productRepository: ProductRepository
 
     @Mock private lateinit var dailyRegionalPriceRepository: DailyRegionalPriceRepository
 
@@ -46,21 +45,21 @@ internal class ProductServiceTest {
                 // 채소류 > 배추 > 봄, 여름 (3단계)
                 Product(
                     name = "봄배추",
-                    categoryCode = 200,
+                    categoryCode = "200",
                     categoryName = "채소류",
-                    itemCode = 201,
+                    itemCode = "201",
                     itemName = "배추",
-                    kindCode = 1,
+                    kindCode = "01",
                     kindName = "봄",
                     source = ProductSource.KAMIS,
                 ),
                 Product(
                     name = "여름배추",
-                    categoryCode = 200,
+                    categoryCode = "200",
                     categoryName = "채소류",
-                    itemCode = 201,
+                    itemCode = "201",
                     itemName = "배추",
-                    kindCode = 2,
+                    kindCode = "02",
                     kindName = "여름",
                     source = ProductSource.KAMIS,
                 ),
@@ -68,9 +67,9 @@ internal class ProductServiceTest {
                 // 채소류 > 감자 (2단계)
                 Product(
                     name = "감자",
-                    categoryCode = 200,
+                    categoryCode = "200",
                     categoryName = "채소류",
-                    itemCode = 202,
+                    itemCode = "202",
                     itemName = "감자",
                     kindCode = null,
                     kindName = null,
@@ -80,11 +79,11 @@ internal class ProductServiceTest {
                 // 축산물 > 돼지고기 > 삼겹살 (3단계)
                 Product(
                     name = "삼겹살",
-                    categoryCode = 500,
+                    categoryCode = "500",
                     categoryName = "축산물",
-                    itemCode = 501,
+                    itemCode = "501",
                     itemName = "돼지고기",
-                    kindCode = 1,
+                    kindCode = "01",
                     kindName = "삼겹살",
                     source = ProductSource.KAMIS,
                 ),
@@ -108,7 +107,7 @@ internal class ProductServiceTest {
         assertThat(result).hasSize(2) // 채소류, 축산물
 
         // 2. 첫 번째 카테고리 '채소류' 상세 검증
-        val vegetableCategory = result.find { it.categoryCode == 200 }
+        val vegetableCategory = result.find { it.categoryCode == "200" }
         assertThat(vegetableCategory).isNotNull
         assertThat(vegetableCategory!!.categoryName).isEqualTo("채소류")
         assertThat(vegetableCategory.items).hasSize(2)
@@ -129,7 +128,7 @@ internal class ProductServiceTest {
         assertThat(potatoItem.productId).isEqualTo(3)
 
         // 3. 두 번째 카테고리 '축산물' 상세 검증
-        val livestockCategory = result.find { it.categoryCode == 500 }
+        val livestockCategory = result.find { it.categoryCode == "500" }
         assertThat(livestockCategory).isNotNull
         assertThat(livestockCategory!!.items).hasSize(1)
 
@@ -139,27 +138,27 @@ internal class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("지역별 상품 가격 순위 조회 시, DB 데이터를 DTO로 변환하고 순위를 부여하여 성공적으로 반환한다")
+    @DisplayName("지역별 상품 가격 순위 조회 시, DB 데이터를 DTO로 변환하고 가격을 오름차순으로 정렬하여 반환한다")
     fun getProductRanking_Success() {
         // given
         val productId = 1L
         val mockProduct =
             Product(
                 name = "테스트상품",
-                categoryCode = 100,
+                categoryCode = "100",
                 categoryName = "부류1",
-                itemCode = 101,
+                itemCode = "101",
                 itemName = "품목1",
-                kindCode = 1,
+                kindCode = "01",
                 kindName = "품종1",
                 source = ProductSource.KAMIS,
             )
 
-        // 테스트를 위해 일부러 가격 순서가 뒤섞인 Mock 데이터를 생성
-        val mockRegion1 = Region(regionName = "서울", regionCode = 1101)
-        val mockRegion2 = Region(regionName = "부산", regionCode = 2100)
-        val mockRegion3 = Region(regionName = "대구", regionCode = 2200)
+        val mockRegion1 = Region(name = "서울", code = "1101")
+        val mockRegion2 = Region(name = "부산", code = "2100")
+        val mockRegion3 = Region(name = "대구", code = "2200")
 
+        // 테스트를 위해 가격 순서가 뒤섞인 Mock 데이터를 생성
         val mockPrices =
             listOf(
                 DailyRegionalPrice(
@@ -193,37 +192,34 @@ internal class ProductServiceTest {
         val result = productService.getProductRanking(productId)
 
         // then
-        assertThat(result.productId).isEqualTo(productId)
         assertThat(result.productName).isEqualTo("테스트상품")
         assertThat(result.ranking).hasSize(3)
 
-        // 정렬과 순위 부여가 올바르게 되었는지 상세 검증
-        assertThat(result.ranking[0].rank).isEqualTo(1)
-        assertThat(result.ranking[0].price).isEqualTo(1000)
-        assertThat(result.ranking[0].regionName).isEqualTo("부산")
-
-        assertThat(result.ranking[1].rank).isEqualTo(2)
-        assertThat(result.ranking[1].price).isEqualTo(1200)
-        assertThat(result.ranking[1].regionName).isEqualTo("서울")
-
-        assertThat(result.ranking[2].rank).isEqualTo(3)
-        assertThat(result.ranking[2].price).isEqualTo(1500)
-        assertThat(result.ranking[2].regionName).isEqualTo("대구")
+        // RegionalPriceInfo 객체로 직접 검증
+        assertThat(result.ranking)
+            .usingRecursiveComparison()
+            .isEqualTo(
+                listOf(
+                    RegionalPriceInfo("부산", 1000),
+                    RegionalPriceInfo("서울", 1200),
+                    RegionalPriceInfo("대구", 1500),
+                )
+            )
     }
 
     @Test
-    @DisplayName("가격 추이 조회 시, 10년이 넘는 데이터는 필터링하고 물가 상승률을 정확하게 계산한다")
+    @DisplayName("가격 추이 조회 시, 10년이 넘는 데이터는 필터링하고 물가 상승률을 정확하게 계산하여 오름차순으로 반환한다")
     fun getProductTrend_FiltersAndCalculatesCorrectly() {
         // given
         val productId = 1L
         val mockProduct =
             Product(
                 name = "테스트상품",
-                categoryCode = 100,
+                categoryCode = "100",
                 categoryName = "부류1",
-                itemCode = 101,
+                itemCode = "101",
                 itemName = "품목1",
-                kindCode = 1,
+                kindCode = "01",
                 kindName = "품종1",
                 source = ProductSource.KAMIS,
             )
@@ -241,25 +237,21 @@ internal class ProductServiceTest {
                         marketType = MarketType.RETAIL,
                     )
                 }
-                .sortedByDescending { it.surveyYear } // Repository의 반환값처럼 연도 내림차순으로 정렬
+                .sortedBy { it.surveyYear }
 
         given(productRepository.findById(productId)).willReturn(Optional.of(mockProduct))
-        given(annualNationalPriceRepository.findByProductIdOrderBySurveyYearDesc(productId))
+        given(annualNationalPriceRepository.findByProductIdOrderBySurveyYearAsc(productId))
             .willReturn(mockPrices)
 
         // when
         val result = productService.getProductTrend(productId)
 
         // then
-        // 1. "최근 10년" 필터링 검증
+        // 1. "최근 10년" 필터링 및 오름차순 정렬 검증
         assertThat(result.annualData).hasSize(10) // 11개가 아닌 10개만 포함되어야 함
-        assertThat(result.annualData.map { it.year }).doesNotContain(2015) // 2015년 데이터는 없어야 함
+        assertThat(result.annualData.map { it.year }).doesNotContain(2015).isSorted
 
-        // 2. DTO의 시작/종료 연도 검증
-        assertThat(result.startYear).isEqualTo(2016)
-        assertThat(result.endYear).isEqualTo(2025)
-
-        // 3. 물가 상승률 계산 검증: ((15000 - 10000) / 10000) * 100 = 50.0
+        // 2. 물가 상승률 계산 검증: ((15000 - 10000) / 10000) * 100 = 50.0
         assertThat(result.inflationRate).isEqualTo(50.0)
     }
 
@@ -283,11 +275,11 @@ internal class ProductServiceTest {
         val mockProduct =
             Product(
                 name = "데이터없는상품",
-                categoryCode = 100,
+                categoryCode = "100",
                 categoryName = "category1",
-                itemCode = 111,
+                itemCode = "111",
                 itemName = "item1",
-                kindCode = 1,
+                kindCode = "01",
                 kindName = "kind",
                 source = ProductSource.KAMIS,
             )
@@ -312,11 +304,11 @@ internal class ProductServiceTest {
         val mockProduct =
             Product(
                 name = "데이터없는상품",
-                categoryCode = 100,
+                categoryCode = "100",
                 categoryName = "category1",
-                itemCode = 111,
+                itemCode = "111",
                 itemName = "item1",
-                kindCode = 1,
+                kindCode = "01",
                 kindName = "kind",
                 source = ProductSource.KAMIS,
             )
@@ -324,7 +316,7 @@ internal class ProductServiceTest {
         given(productRepository.findById(productId)).willReturn(Optional.of(mockProduct))
 
         // 연도별 가격 데이터는 비어있는 리스트를 반환하도록 설정
-        given(annualNationalPriceRepository.findByProductIdOrderBySurveyYearDesc(productId))
+        given(annualNationalPriceRepository.findByProductIdOrderBySurveyYearAsc(productId))
             .willReturn(emptyList())
 
         // when & then

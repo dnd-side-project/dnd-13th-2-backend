@@ -33,9 +33,9 @@ internal class DailyRegionalPriceRepositoryTest {
         product1 =
             Product(
                 name = "테스트상품1",
-                categoryCode = 100,
+                categoryCode = "100",
                 categoryName = "테스트부류",
-                itemCode = 101,
+                itemCode = "101",
                 itemName = "테스트품목",
                 kindCode = null,
                 kindName = null,
@@ -43,10 +43,10 @@ internal class DailyRegionalPriceRepositoryTest {
             )
         entityManager.persist(product1)
 
-        region1 = Region(regionName = "테스트지역1", regionCode = 1001)
+        region1 = Region(name = "테스트지역1", code = "1001")
         entityManager.persist(region1)
 
-        region2 = Region(regionName = "테스트지역2", regionCode = 1002)
+        region2 = Region(name = "테스트지역2", code = "1002")
         entityManager.persist(region2)
     }
 
@@ -92,9 +92,9 @@ internal class DailyRegionalPriceRepositoryTest {
         val otherProduct =
             Product(
                 name = "다른상품",
-                categoryCode = 200,
+                categoryCode = "200",
                 categoryName = "다른부류",
-                itemCode = 201,
+                itemCode = "201",
                 itemName = "다른품목",
                 kindCode = null,
                 kindName = null,
@@ -121,7 +121,7 @@ internal class DailyRegionalPriceRepositoryTest {
             assertThat(it.product.id).isEqualTo(product1.id)
         }
 
-        assertThat(latestPrices.map { it.region.regionName })
+        assertThat(latestPrices.map { it.region.name })
             .containsExactlyInAnyOrder("테스트지역1", "테스트지역2")
     }
 }
