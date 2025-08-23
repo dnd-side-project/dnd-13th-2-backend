@@ -5,7 +5,7 @@ import com.eodigo.domain.product.repository.AnnualNationalPriceRepository
 import org.springframework.batch.item.Chunk
 import org.springframework.batch.item.ItemWriter
 
-class AnnualPriceJpaItemWriter(
+class KamisAnnualPriceJpaItemWriter(
     private val annualNationalPriceRepository: AnnualNationalPriceRepository
 ) : ItemWriter<List<AnnualNationalPrice>> {
 
@@ -17,7 +17,9 @@ class AnnualPriceJpaItemWriter(
 
         for (item in flattenedList) {
             val productId =
-                requireNotNull(item.product.id) { "AnnualPriceJpaItemWriter: product.id가 null입니다." }
+                requireNotNull(item.product.id) {
+                    "KamisAnnualPriceJpaItemWriter: product.id가 null입니다."
+                }
             val existingPrice =
                 annualNationalPriceRepository.findByProductIdAndSurveyYear(
                     productId,

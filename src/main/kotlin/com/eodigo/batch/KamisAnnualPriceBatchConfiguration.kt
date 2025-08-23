@@ -1,7 +1,7 @@
 package com.eodigo.batch
 
 import com.eodigo.batch.processor.KamisAnnualPriceProcessor
-import com.eodigo.batch.writer.AnnualPriceJpaItemWriter
+import com.eodigo.batch.writer.KamisAnnualPriceJpaItemWriter
 import com.eodigo.domain.product.entity.AnnualNationalPrice
 import com.eodigo.domain.product.entity.Product
 import com.eodigo.domain.product.repository.AnnualNationalPriceRepository
@@ -74,6 +74,6 @@ class KamisAnnualPriceBatchConfiguration(
 
     @Bean
     fun annualPriceItemWriter(): ItemWriter<List<AnnualNationalPrice>> {
-        return AnnualPriceJpaItemWriter(annualNationalPriceRepository)
+        return KamisAnnualPriceJpaItemWriter(annualNationalPriceRepository)
     }
 }
