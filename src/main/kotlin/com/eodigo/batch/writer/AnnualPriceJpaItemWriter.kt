@@ -16,10 +16,12 @@ class AnnualPriceJpaItemWriter(
         val itemsToSave = mutableListOf<AnnualNationalPrice>()
 
         for (item in flattenedList) {
+            val productId =
+                requireNotNull(item.product.id) { "AnnualPriceJpaItemWriter: product.id가 null입니다." }
             val existingPrice =
                 annualNationalPriceRepository.findByProductIdAndSurveyYear(
-                    item.product.id!!,
-                    item.surveyYear!!,
+                    productId,
+                    item.surveyYear,
                 )
 
             if (existingPrice != null) {
