@@ -119,7 +119,7 @@ internal class ProductControllerTest {
         // when & then
         mockMvc
             .perform(get("/api/v1/products/{productId}/trends", nonExistingId))
-            .andExpect(status().isNotFound)
+            .andExpect(status().isNotFound) // HTTP 404 검증
             .andExpect(jsonPath("$.code").value(ErrorCode.PRODUCT_NOT_FOUND.code))
     }
 
@@ -136,7 +136,7 @@ internal class ProductControllerTest {
         // when & then
         mockMvc
             .perform(get("/api/v1/products/{productId}/rankings", productIdWithNoPrice))
-            .andExpect(status().isNoContent)
+            .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.code").value(ErrorCode.PRODUCT_RANKING_NOT_FOUND.code))
     }
 }
