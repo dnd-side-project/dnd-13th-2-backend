@@ -47,16 +47,16 @@ class KamisAnnualPriceBatchConfiguration(
     fun kamisAnnualPriceSyncStep(): Step {
         return StepBuilder(STEP_NAME, jobRepository)
             .chunk<Product, List<AnnualNationalPrice>>(CHUNK_SIZE, transactionManager)
-            .reader(annualPriceProductReader())
+            .reader(kamisAnnualPriceReader())
             .processor(kamisAnnualPriceProcessor())
-            .writer(annualPriceItemWriter())
+            .writer(kamisAnnualPriceJpaItemWriter())
             .build()
     }
 
     @Bean
-    fun annualPriceProductReader(): ItemReader<Product> {
+    fun kamisAnnualPriceReader(): ItemReader<Product> {
         return JpaPagingItemReaderBuilder<Product>()
-            .name("annualPriceProductReader")
+            .name("kamisAnnualPriceReader")
             .entityManagerFactory(entityManagerFactory)
             .pageSize(CHUNK_SIZE)
             .queryString("SELECT p FROM Product p ORDER BY p.id ASC")
@@ -73,7 +73,7 @@ class KamisAnnualPriceBatchConfiguration(
     }
 
     @Bean
-    fun annualPriceItemWriter(): ItemWriter<List<AnnualNationalPrice>> {
+    fun kamisAnnualPriceJpaItemWriter(): ItemWriter<List<AnnualNationalPrice>> {
         return KamisAnnualPriceJpaItemWriter(annualNationalPriceRepository)
     }
 }
