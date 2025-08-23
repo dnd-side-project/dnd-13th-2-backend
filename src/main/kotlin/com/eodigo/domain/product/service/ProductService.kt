@@ -83,54 +83,43 @@ class ProductService(
         val rankedPrices =
             latestPrices
                 .sortedBy { it.price }
-                .mapIndexed { index, priceInfo ->
-                    RegionalPriceInfo(
-                        rank = index + 1,
-                        regionName = priceInfo.region.regionName,
-                        price = priceInfo.price,
-                    )
+                .map { priceInfo ->
+                    RegionalPriceInfo(regionName = priceInfo.region.name, price = priceInfo.price)
                 }
 
-        return ProductRankingResponse(
-            productId = productId,
-            productName = product.name,
-            surveyDate = latestPrices.first().surveyDate,
-            ranking = rankedPrices,
-        )
+        return ProductRankingResponse(productName = product.name, ranking = rankedPrices)
     }
 
     fun getProductTrend(productId: Long): ProductTrendResponse {
         val product = findProductById(productId)
         val allAnnualPrices =
-            annualNationalPriceRepository.findByProductIdOrderBySurveyYearDesc(productId)
+            annualNationalPriceRepository.findByProductIdOrderBySurveyYearAsc(productId)
 
         if (allAnnualPrices.isEmpty()) {
             throw ProductTrendNotFoundException()
         }
 
-        val latestYear = allAnnualPrices.first().surveyYear
+        val latestYear = allAnnualPrices.last().surveyYear
         val startYearOfLast10Years = latestYear - 9
-        val last10YearsPrices = allAnnualPrices.filter { it.surveyYear >= startYearOfLast10Years }
+        val last10YearsPrices =
+            allAnnualPrices.takeLastWhile { it.surveyYear >= startYearOfLast10Years }
 
         if (last10YearsPrices.isEmpty()) {
             throw ProductTrendNotFoundException()
         }
 
-        val firstPrice = last10YearsPrices.last().price
-        val lastPrice = last10YearsPrices.first().price
+        val oldestPrice = last10YearsPrices.first().price
+        val latestPrice = last10YearsPrices.last().price
 
         val inflationRate =
-            if (firstPrice > 0) {
-                ((lastPrice - firstPrice).toDouble() / firstPrice) * 100
+            if (oldestPrice > 0) {
+                ((latestPrice - oldestPrice).toDouble() / oldestPrice) * 100
             } else {
                 0.0
             }
 
         return ProductTrendResponse(
-            productId = productId,
             productName = product.name,
-            startYear = last10YearsPrices.last().surveyYear,
-            endYear = last10YearsPrices.first().surveyYear,
             inflationRate = inflationRate,
             annualData = last10YearsPrices.map { AnnualPriceInfo(it.surveyYear, it.price) },
         )
