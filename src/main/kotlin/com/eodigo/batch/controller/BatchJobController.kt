@@ -63,7 +63,7 @@ class BatchJobController(
 
             ResponseEntity.ok("Batch job '$jobName' has been started.")
         } catch (e: InvalidInputValueException) {
-            throw InvalidInputValueException()
+            throw e
         } catch (e: Exception) {
             ResponseEntity.internalServerError()
                 .body("Failed to start batch job '$jobName'. Reason: ${e.message}")
