@@ -21,9 +21,10 @@ class KamisAnnualPriceJpaItemWriter(
                     "KamisAnnualPriceJpaItemWriter: product.id가 null입니다."
                 }
             val existingPrice =
-                annualNationalPriceRepository.findByProductIdAndSurveyYear(
+                annualNationalPriceRepository.findByProductIdAndSurveyYearAndMarketType(
                     productId,
                     item.surveyYear,
+                    item.marketType,
                 )
 
             if (existingPrice != null) {
