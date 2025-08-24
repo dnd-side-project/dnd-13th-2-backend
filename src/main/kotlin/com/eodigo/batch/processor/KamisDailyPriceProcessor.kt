@@ -33,6 +33,11 @@ class KamisDailyPriceProcessor(
     override fun process(wrapper: KamisDailyPriceApiData): DailyRegionalPrice? {
         // 2. 가격 정보가 유효하지 않으면 필터링
         val item = wrapper.item
+
+        if (item.rank != "상품") {
+            return null
+        }
+
         val priceStr = item.price?.replace(",", "")
         if (priceStr.isNullOrBlank() || priceStr == "-") {
             return null

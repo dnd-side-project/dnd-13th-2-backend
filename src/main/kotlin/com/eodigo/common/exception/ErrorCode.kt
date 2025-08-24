@@ -16,6 +16,7 @@ enum class ErrorCode(val status: HttpStatus, val code: String, val message: Stri
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "서버 내부에서 오류가 발생했습니다."),
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "요청 값의 타입이 유효하지 않습니다."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "접근 권한이 없습니다."),
+    INVALID_API_KEY(HttpStatus.UNAUTHORIZED, "C006", "유효하지 않은 API 키입니다. 헤더(X-API-KEY)를 확인해주세요."),
     URL_NOT_FOUND(HttpStatus.NOT_FOUND, "C007", "요청한 URL을 찾을 수 없습니다."),
 
     // Product
