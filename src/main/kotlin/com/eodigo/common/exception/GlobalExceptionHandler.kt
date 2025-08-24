@@ -4,9 +4,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -29,6 +31,22 @@ class GlobalExceptionHandler {
         val fieldError = e.bindingResult.fieldErrors.firstOrNull()
         val errorMessage = fieldError?.defaultMessage ?: errorCode.message
         val response = ErrorResponse.of(errorCode, errorMessage)
+        return ResponseEntity(response, errorCode.status)
+    }
+
+    /** @RequestParam으로 지정된 필수 파라미터 누락 시 발생하는 예외를 처리 */
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    private fun handleMissingServletRequestParameterException(
+        e: MissingServletRequestParameterException
+    ): ResponseEntity<ErrorResponse> {
+        val errorCode = ErrorCode.INVALID_INPUT_VALUE
+        val message = "필수 파라미터 '${e.parameterName}'(이)가 누락되었습니다."
+        log.warn(
+            "MissingServletRequestParameterException: code={}, message='{}'",
+            errorCode.code,
+            e.message,
+        )
+        val response = ErrorResponse.of(errorCode, message)
         return ResponseEntity(response, errorCode.status)
     }
 
@@ -57,6 +75,22 @@ class GlobalExceptionHandler {
             "HttpRequestMethodNotSupportedException: code={}, message='{}'",
             errorCode.code,
             e.message,
+        )
+        val response = ErrorResponse.of(errorCode)
+        return ResponseEntity(response, errorCode.status)
+    }
+
+    /** 존재하지 않는 URL 요청 시 발생하는 예외를 처리 */
+    @ExceptionHandler(NoResourceFoundException::class)
+    private fun handleNoResourceFoundException(
+        e: NoResourceFoundException
+    ): ResponseEntity<ErrorResponse> {
+        val errorCode = ErrorCode.URL_NOT_FOUND
+        log.warn(
+            "NoResourceFoundException: code={}, message='{}', path='{}'",
+            errorCode.code,
+            errorCode.message,
+            e.resourcePath,
         )
         val response = ErrorResponse.of(errorCode)
         return ResponseEntity(response, errorCode.status)
