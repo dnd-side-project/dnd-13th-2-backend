@@ -29,10 +29,18 @@ class StoreService(
                 it.store.category == request.category
             }
 
+        // 가게별로 그룹화한 뒤, 각 가게에서 가장 저렴한 메뉴 하나만 선택
+        val cheapestMenuByStore =
+            menus
+                .groupBy { it.store }
+                .mapNotNull { (store, menusInStore) ->
+                    val cheapestMenu = menusInStore.minByOrNull { it.price }
+                    cheapestMenu?.let { store to it }
+                }
+
         // 지도 경계값 내의 매장 필터링
         val locationFilteredMenus =
-            menus.filter { menu ->
-                val store = menu.store
+            cheapestMenuByStore.filter { (store, _) ->
                 store.latitude >= request.southWestLat &&
                     store.latitude <= request.northEastLat &&
                     store.longitude >= request.southWestLng &&
@@ -40,8 +48,7 @@ class StoreService(
             }
 
         val storeDtoList =
-            locationFilteredMenus.map { menu ->
-                val store = menu.store
+            locationFilteredMenus.map { (store, menu) ->
                 val distance =
                     calculateDistance(
                         lat1 = request.userLat,
