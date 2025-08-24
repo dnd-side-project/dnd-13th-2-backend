@@ -33,9 +33,10 @@ class StoreService(
         val cheapestMenuByStore =
             menus
                 .groupBy { it.store }
-                .mapValues { (_, menusInStore) -> menusInStore.minByOrNull { it.price } }
-                .filterValues { it != null }
-                .map { it.key to it.value!! }
+                .mapNotNull { (store, menusInStore) ->
+                    val cheapestMenu = menusInStore.minByOrNull { it.price }
+                    cheapestMenu?.let { store to it }
+                }
 
         // 지도 경계값 내의 매장 필터링
         val locationFilteredMenus =
