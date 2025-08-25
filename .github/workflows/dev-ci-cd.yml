@@ -43,9 +43,11 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           docker buildx build \
             --platform linux/amd64 \
+            --secret id=sentryauthtoken,env=SENTRY_AUTH_TOKEN \
             --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             --output type=image,push=true \
             --cache-from type=registry,ref=$ECR_REGISTRY/$ECR_REPOSITORY:buildcache \
@@ -71,7 +73,8 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           KAMIS_API_KEY: ${{ secrets.KAMIS_API_KEY }}
           KAMIS_ID: ${{ secrets.KAMIS_ID }}
-          ADMIN_API_KEY: ${{secrets.ADMIN_API_KEY}}
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           set -euo pipefail # 스크립트 오류 발생 시 즉시 중단
 
@@ -101,6 +104,7 @@ jobs:
           -e KAMIS_API_KEY="$KAMIS_API_KEY" \
           -e KAMIS_ID="$KAMIS_ID" \
           -e ADMIN_API_KEY="$ADMIN_API_KEY" \
+          -e SENTRY_DSN="$SENTRY_DSN" \
           $IMAGE_URI
           echo "✅ New container started."
 

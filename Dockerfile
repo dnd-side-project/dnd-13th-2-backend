@@ -15,8 +15,9 @@ RUN ./gradlew dependencies
 
 COPY src ./src
 
-RUN ./gradlew bootJar --no-daemon
-
+RUN --mount=type=secret,id=sentryauthtoken \
+    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/sentryauthtoken) && \
+    ./gradlew bootJar --no-daemon
 
 # --- 2단계: 최종 이미지 생성 스테이지 ---
 FROM eclipse-temurin:17-jre-alpine
