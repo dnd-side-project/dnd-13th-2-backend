@@ -47,6 +47,7 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64 \
+            --secret id=sentryauthtoken,env=SENTRY_AUTH_TOKEN \
             --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             --output type=image,push=true \
             --cache-from type=registry,ref=$ECR_REGISTRY/$ECR_REPOSITORY:buildcache \

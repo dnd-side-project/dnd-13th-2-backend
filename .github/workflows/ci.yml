@@ -40,4 +40,6 @@ jobs:
 
       # 5. Gradle로 빌드 및 테스트 실행
       - name: Build with Gradle
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: ./gradlew build
