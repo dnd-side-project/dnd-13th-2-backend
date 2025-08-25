@@ -5,6 +5,7 @@ plugins {
     id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.2.1"
+    id("io.sentry.jvm.gradle") version "5.9.0"
 }
 
 group = "org.example"
@@ -71,3 +72,11 @@ dependencies {
 kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
 
 tasks.withType<Test> { useJUnitPlatform() }
+
+sentry {
+    includeSourceContext.set(true)
+
+    org.set("dnd1302")
+    projectName.set("eodigo-backend")
+    authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
+}
