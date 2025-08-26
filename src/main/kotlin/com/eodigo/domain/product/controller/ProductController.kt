@@ -3,6 +3,7 @@ package com.eodigo.domain.product.controller
 import com.eodigo.common.exception.ErrorResponse
 import com.eodigo.domain.product.dto.CategoryInfo
 import com.eodigo.domain.product.dto.ProductRankingResponse
+import com.eodigo.domain.product.dto.ProductSearchResponse
 import com.eodigo.domain.product.dto.ProductTrendResponse
 import com.eodigo.domain.product.service.ProductService
 import io.swagger.v3.oas.annotations.Operation
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "물가 API", description = "물가 정보 관련 API")
@@ -105,5 +107,42 @@ class ProductController(private val productService: ProductService) {
     fun getProductTrend(@PathVariable productId: Long): ResponseEntity<ProductTrendResponse> {
         val trendData = productService.getProductTrend(productId)
         return ResponseEntity.ok(trendData)
+    }
+
+    @Operation(summary = "상품 검색", description = "키워드가 포함된 상품 목록을 조회합니다.")
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(
+                    responseCode = "200",
+                    description = "상품 검색 성공. 검색 결과가 없거나, 검색어가 비어있는 경우 빈 배열을 반환합니다.",
+                ),
+                ApiResponse(
+                    responseCode = "400",
+                    description = "필수 파라미터가 누락된 경우",
+                    content =
+                        [
+                            Content(
+                                schema = Schema(implementation = ErrorResponse::class),
+                                examples =
+                                    [
+                                        ExampleObject(
+                                            name = "Invalid Input Value",
+                                            description = "쿼리 파라미터 'keyword'가 누락됨",
+                                            value =
+                                                "{\"status\": 400, \"code\": \"C001\", \"message\": \"필수 파라미터 'keyword'(이)가 누락되었습니다.\"}",
+                                        )
+                                    ],
+                            )
+                        ],
+                ),
+            ]
+    )
+    @GetMapping("/search")
+    fun searchProducts(
+        @RequestParam("keyword") keyword: String
+    ): ResponseEntity<List<ProductSearchResponse>> {
+        val searchResult = productService.searchProducts(keyword)
+        return ResponseEntity.ok(searchResult)
     }
 }

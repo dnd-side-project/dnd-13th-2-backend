@@ -128,4 +128,14 @@ class ProductService(
     private fun findProductById(productId: Long): Product {
         return productRepository.findById(productId).orElseThrow { ProductNotFoundException() }
     }
+
+    fun searchProducts(keyword: String): List<ProductSearchResponse> {
+        if (keyword.isBlank()) {
+            return emptyList()
+        }
+
+        return productRepository.findByNameContaining(keyword).map { product ->
+            ProductSearchResponse.from(product)
+        }
+    }
 }

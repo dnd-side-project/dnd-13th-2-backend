@@ -10,4 +10,6 @@ interface ProductRepository : JpaRepository<Product, Long> {
     fun findAllBySource(source: ProductSource): List<Product>
 
     fun findAllByOrderByIdAsc(): List<Product>
+
+    fun findByNameContaining(keyword: String): List<Product>
 }

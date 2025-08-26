@@ -1,5 +1,6 @@
 package com.eodigo.domain.product.service
 
+import com.eodigo.domain.product.dto.ProductSearchResponse
 import com.eodigo.domain.product.dto.RegionalPriceInfo
 import com.eodigo.domain.product.entity.AnnualNationalPrice
 import com.eodigo.domain.product.entity.DailyRegionalPrice
@@ -19,10 +20,11 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.BDDMockito.* // BDDMockito를 사용하면 given-when-then과 더 잘 어울립니다.
+import org.mockito.BDDMockito.*
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
 
 @ExtendWith(MockitoExtension::class)
 internal class ProductServiceTest {
@@ -322,5 +324,52 @@ internal class ProductServiceTest {
         // when & then
         assertThatThrownBy { productService.getProductTrend(productId) }
             .isInstanceOf(ProductTrendNotFoundException::class.java)
+    }
+
+    @Test
+    @DisplayName("searchProducts: 검색 결과가 있을 때 ProductSearchResponse DTO 목록으로 변환하여 반환한다")
+    fun searchProducts_Success_ReturnsDtoList() {
+        // given
+        val keyword = "토마토"
+        val product1 =
+            Product(
+                name = "토마토",
+                categoryCode = "200",
+                categoryName = "채소",
+                itemCode = "210",
+                itemName = "토마토",
+                source = ProductSource.KAMIS,
+                kindCode = null,
+                kindName = null,
+            )
+
+        product1.javaClass.getDeclaredField("id").apply {
+            isAccessible = true
+            set(product1, 1L)
+        }
+        given(productRepository.findByNameContaining(keyword)).willReturn(listOf(product1))
+
+        // when
+        val results = productService.searchProducts(keyword)
+
+        // then
+        assertThat(results).hasSize(1)
+        assertThat(results.first()).isInstanceOf(ProductSearchResponse::class.java)
+        assertThat(results.first().name).isEqualTo("토마토")
+        assertThat(results.first().productId).isEqualTo(1L)
+    }
+
+    @Test
+    @DisplayName("searchProducts: 검색어가 비어있거나 공백이면, DB 조회를 하지 않고 빈 리스트를 반환한다")
+    fun searchProducts_ReturnsEmptyList_WhenKeywordIsBlank() {
+        // given
+        val keyword = "  "
+
+        // when
+        val results = productService.searchProducts(keyword)
+
+        // then
+        assertThat(results).isEmpty()
+        verify(productRepository, never()).findByNameContaining(any())
     }
 }
