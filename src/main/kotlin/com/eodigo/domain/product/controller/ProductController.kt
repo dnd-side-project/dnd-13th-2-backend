@@ -109,6 +109,35 @@ class ProductController(private val productService: ProductService) {
         return ResponseEntity.ok(trendData)
     }
 
+    @Operation(summary = "상품 검색", description = "키워드가 포함된 상품 목록을 조회합니다.")
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(
+                    responseCode = "200",
+                    description = "상품 검색 성공. 검색 결과가 없거나, 검색어가 비어있는 경우 빈 배열을 반환합니다.",
+                ),
+                ApiResponse(
+                    responseCode = "400",
+                    description = "필수 파라미터가 누락된 경우",
+                    content =
+                        [
+                            Content(
+                                schema = Schema(implementation = ErrorResponse::class),
+                                examples =
+                                    [
+                                        ExampleObject(
+                                            name = "Invalid Input Value",
+                                            description = "쿼리 파라미터 'keyword'가 누락됨",
+                                            value =
+                                                "{\"status\": 400, \"code\": \"C001\", \"message\": \"필수 파라미터 'keyword'(이)가 누락되었습니다.\"}",
+                                        )
+                                    ],
+                            )
+                        ],
+                ),
+            ]
+    )
     @GetMapping("/search")
     fun searchProducts(
         @RequestParam("keyword") keyword: String
