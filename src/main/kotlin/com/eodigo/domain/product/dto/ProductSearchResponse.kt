@@ -3,6 +3,7 @@ package com.eodigo.domain.product.dto
 import com.eodigo.domain.product.entity.Product
 import io.swagger.v3.oas.annotations.media.Schema
 
+@Schema(name = "ProductSearchResponse", description = "상품 검색 결과 DTO")
 data class ProductSearchResponse(
     @Schema(description = "상품의 ID", example = "101") val productId: Long,
     @Schema(description = "상품의 이름", example = "대파") val name: String,
