@@ -3,6 +3,7 @@ package com.eodigo.domain.product.controller
 import com.eodigo.common.exception.ErrorResponse
 import com.eodigo.domain.product.dto.CategoryInfo
 import com.eodigo.domain.product.dto.ProductRankingResponse
+import com.eodigo.domain.product.dto.ProductSearchResponse
 import com.eodigo.domain.product.dto.ProductTrendResponse
 import com.eodigo.domain.product.service.ProductService
 import io.swagger.v3.oas.annotations.Operation
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "물가 API", description = "물가 정보 관련 API")
@@ -105,5 +107,13 @@ class ProductController(private val productService: ProductService) {
     fun getProductTrend(@PathVariable productId: Long): ResponseEntity<ProductTrendResponse> {
         val trendData = productService.getProductTrend(productId)
         return ResponseEntity.ok(trendData)
+    }
+
+    @GetMapping("/search")
+    fun searchProducts(
+        @RequestParam("keyword") keyword: String
+    ): ResponseEntity<List<ProductSearchResponse>> {
+        val searchResult = productService.searchProducts(keyword)
+        return ResponseEntity.ok(searchResult)
     }
 }
