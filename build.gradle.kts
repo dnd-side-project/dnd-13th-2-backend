@@ -61,6 +61,9 @@ dependencies {
     // Spring Batch Test
     testImplementation("org.springframework.batch:spring-batch-test")
 
+    // Mockito
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+
     // Netty Resolver DNS (macOS)
     val isMac = System.getProperty("os.name").startsWith("Mac OS X")
     val architecture = System.getProperty("os.arch")

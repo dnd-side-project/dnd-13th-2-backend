@@ -5,6 +5,7 @@ import com.eodigo.common.exception.GlobalExceptionHandler
 import com.eodigo.domain.product.dto.AnnualPriceInfo
 import com.eodigo.domain.product.dto.CategoryInfo
 import com.eodigo.domain.product.dto.ProductRankingResponse
+import com.eodigo.domain.product.dto.ProductSearchResponse
 import com.eodigo.domain.product.dto.ProductTrendResponse
 import com.eodigo.domain.product.dto.RegionalPriceInfo
 import com.eodigo.domain.product.exception.ProductNotFoundException
@@ -138,5 +139,37 @@ internal class ProductControllerTest {
             .perform(get("/api/v1/products/{productId}/rankings", productIdWithNoPrice))
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.code").value(ErrorCode.PRODUCT_RANKING_NOT_FOUND.code))
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/products/search: keyword로 상품 검색 요청 시 성공(200 OK)과 함께 결과를 반환한다")
+    fun searchProducts_Success_ReturnsOkWithResults() {
+        // given
+        val keyword = "배추"
+        val responseDtos =
+            listOf(
+                ProductSearchResponse(productId = 1L, name = "봄배추", itemName = "배추"),
+                ProductSearchResponse(productId = 2L, name = "가을배추", itemName = "배추"),
+            )
+        given(productService.searchProducts(keyword)).willReturn(responseDtos)
+
+        // when & then
+        mockMvc
+            .perform(get("/api/v1/products/search").param("keyword", keyword))
+            .andExpect(status().isOk) // HTTP 상태가 200 OK 인지
+            .andExpect(jsonPath("$.length()").value(2)) // JSON 배열의 길이가 2인지
+            .andExpect(jsonPath("$[0].productId").value(1L)) // 첫 번째 객체의 필드 검증
+            .andExpect(jsonPath("$[0].name").value("봄배추"))
+            .andDo(print()) // 요청/응답 전체 내용 출력
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/products/search: keyword 없이 요청하면 실패(400 Bad Request)한다")
+    fun searchProducts_ThrowsException_WhenKeywordIsMissing() {
+        // when & then
+        mockMvc
+            .perform(get("/api/v1/products/search")) // keyword 파라미터 없이 요청
+            .andExpect(status().isBadRequest) // HTTP 상태가 400 Bad Request 인지
+            .andDo(print())
     }
 }
