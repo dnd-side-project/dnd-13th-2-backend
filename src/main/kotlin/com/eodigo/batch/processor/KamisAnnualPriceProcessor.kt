@@ -54,7 +54,7 @@ class KamisAnnualPriceProcessor(
             return null
         } catch (e: Exception) {
             log.error("Failed to process annual price for product id: {}", item.id, e)
-            return null
+            throw e
         }
     }
 

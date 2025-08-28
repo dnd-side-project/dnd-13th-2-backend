@@ -72,10 +72,10 @@ class KamisDailyPriceApiReader(
                             allItems?.addAll(wrappedItems)
                         }
                     }
-                    Thread.sleep(API_CALL_DELAY_MS)
                 } catch (e: InterruptedException) {
                     log.warn("API call delay was interrupted", e)
                     Thread.currentThread().interrupt()
+                    break
                 } catch (e: Exception) {
                     log.error(
                         "Failed to fetch data for category: {}, region: {}. Error: {}",
@@ -83,6 +83,14 @@ class KamisDailyPriceApiReader(
                         regionCode,
                         e.message,
                     )
+                    throw e
+                } finally {
+                    try {
+                        Thread.sleep(API_CALL_DELAY_MS)
+                    } catch (ie: InterruptedException) {
+                        log.warn("API call delay was interrupted", ie)
+                        Thread.currentThread().interrupt()
+                    }
                 }
             }
         }
