@@ -4,6 +4,7 @@ import com.eodigo.batch.dto.KamisDailyPriceApiData
 import com.eodigo.external.kamis.KamisApiClient
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import org.slf4j.LoggerFactory
 import org.springframework.batch.item.ItemReader
 
 class KamisDailyPriceApiReader(
@@ -14,6 +15,8 @@ class KamisDailyPriceApiReader(
     private val regionCodes: List<String>,
     private val surveyDate: LocalDate,
 ) : ItemReader<KamisDailyPriceApiData> {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     // 1. 처리할 모든 API 호출 결과(가격 아이템)를 담아둘 리스트
     private var allItems: MutableList<KamisDailyPriceApiData>? = null
@@ -45,26 +48,39 @@ class KamisDailyPriceApiReader(
 
         for (categoryCode in categoryCodes) {
             for (regionCode in regionCodes) {
-                val response =
-                    kamisApiClient.getDailyPrices(
-                        certKey = apiKey,
-                        certId = certId,
-                        regDay = regDay,
-                        categoryCode = categoryCode,
-                        countryCode = regionCode,
-                    )
+                try {
+                    val response =
+                        kamisApiClient.getDailyPrices(
+                            certKey = apiKey,
+                            certId = certId,
+                            regDay = regDay,
+                            categoryCode = categoryCode,
+                            countryCode = regionCode,
+                        )
 
-                if (response?.data?.errorCode == "000") {
-                    response.data.items?.let { items ->
-                        val wrappedItems =
-                            items.map { item ->
-                                KamisDailyPriceApiData(regionCode = regionCode, item = item)
-                            }
-                        allItems?.addAll(wrappedItems)
+                    if (response?.data?.errorCode == "000") {
+                        response.data.items?.let { items ->
+                            val wrappedItems =
+                                items.map { item ->
+                                    KamisDailyPriceApiData(regionCode = regionCode, item = item)
+                                }
+                            allItems?.addAll(wrappedItems)
+                        }
                     }
+                    Thread.sleep(200)
+                } catch (e: InterruptedException) {
+                    log.warn("API call delay was interrupted", e)
+                    Thread.currentThread().interrupt()
+                } catch (e: Exception) {
+                    log.error(
+                        "Failed to fetch data for category: {}, region: {}. Error: {}",
+                        categoryCode,
+                        regionCode,
+                        e.message,
+                    )
                 }
             }
         }
-        println("KamisDailyPriceApiReader: Total ${allItems?.size} items initialized.")
+        log.info("KamisDailyPriceApiReader: Total ${allItems?.size} items initialized.")
     }
 }
