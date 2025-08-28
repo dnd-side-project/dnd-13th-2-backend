@@ -59,7 +59,7 @@ class KamisAnnualPriceBatchConfiguration(
             .name("kamisAnnualPriceReader")
             .entityManagerFactory(entityManagerFactory)
             .pageSize(CHUNK_SIZE)
-            .queryString("SELECT p FROM Product p ORDER BY p.id ASC")
+            .queryString("SELECT p FROM Product p WHERE p.categoryCode != '500' ORDER BY p.id ASC")
             .build()
     }
 
