@@ -16,6 +16,11 @@ class KamisDailyPriceApiReader(
     private val surveyDate: LocalDate,
 ) : ItemReader<KamisDailyPriceApiData> {
 
+    companion object {
+        private const val API_CALL_DELAY_MS = 200L
+        private const val ERROR_CODE_SUCCESS = "000"
+    }
+
     private val log = LoggerFactory.getLogger(javaClass)
 
     // 1. 처리할 모든 API 호출 결과(가격 아이템)를 담아둘 리스트
@@ -58,7 +63,7 @@ class KamisDailyPriceApiReader(
                             countryCode = regionCode,
                         )
 
-                    if (response?.data?.errorCode == "000") {
+                    if (response?.data?.errorCode == ERROR_CODE_SUCCESS) {
                         response.data.items?.let { items ->
                             val wrappedItems =
                                 items.map { item ->
@@ -67,7 +72,7 @@ class KamisDailyPriceApiReader(
                             allItems?.addAll(wrappedItems)
                         }
                     }
-                    Thread.sleep(200)
+                    Thread.sleep(API_CALL_DELAY_MS)
                 } catch (e: InterruptedException) {
                     log.warn("API call delay was interrupted", e)
                     Thread.currentThread().interrupt()

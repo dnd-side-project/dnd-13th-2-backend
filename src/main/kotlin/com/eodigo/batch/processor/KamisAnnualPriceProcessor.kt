@@ -19,6 +19,12 @@ class KamisAnnualPriceProcessor(
     private val certId: String,
 ) : ItemProcessor<Product, List<AnnualNationalPrice>> {
 
+    companion object {
+        private const val API_CALL_DELAY_MS = 200L
+        private const val RETAIL_CODE = "01"
+        private const val RANK_STANDARD = "상품"
+    }
+
     private val log = LoggerFactory.getLogger(javaClass)
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
@@ -47,9 +53,7 @@ class KamisAnnualPriceProcessor(
             Thread.currentThread().interrupt()
             return null
         } catch (e: Exception) {
-            log.error(
-                "Failed to process annual price for product id: ${item.id}. Error: ${e.message}"
-            )
+            log.error("Failed to process annual price for product id: {}", item.id, e)
             return null
         }
     }
@@ -69,7 +73,7 @@ class KamisAnnualPriceProcessor(
                 kindCode = kindCode,
             )
 
-        Thread.sleep(200)
+        Thread.sleep(API_CALL_DELAY_MS)
 
         if (responseString.isNullOrBlank() || responseString.contains("결과가 존재하지 않습니다.")) {
             return null
@@ -85,7 +89,9 @@ class KamisAnnualPriceProcessor(
         }
 
         val retailPriceSection =
-            priceSections.find { it.productClsCode == "01" && it.caption?.contains("상품") == true }
+            priceSections.find {
+                it.productClsCode == RETAIL_CODE && it.caption?.contains(RANK_STANDARD) == true
+            }
 
         return retailPriceSection?.items
     }
