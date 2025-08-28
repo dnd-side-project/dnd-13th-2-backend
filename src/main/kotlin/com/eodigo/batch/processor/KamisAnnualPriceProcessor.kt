@@ -101,26 +101,30 @@ class KamisAnnualPriceProcessor(
         priceItems: List<KamisYearlyPriceItemDto>,
         product: Product,
         currentYear: String,
-    ): List<AnnualNationalPrice> {
-        return priceItems
-            .filter { it.div == currentYear }
-            .mapNotNull { priceItem ->
-                val yearStr = priceItem.div
-                val priceStr = priceItem.avgData?.replace(",", "")
+    ): List<AnnualNationalPrice>? {
+        val entities =
+            priceItems
+                .filter { it.div == currentYear }
+                .mapNotNull { priceItem ->
+                    val yearStr = priceItem.div
+                    val priceStr = priceItem.avgData?.replace(",", "")
 
-                if (
-                    yearStr != null && priceStr?.all(Char::isDigit) == true && priceStr.isNotEmpty()
-                ) {
-                    AnnualNationalPrice(
-                        product = product,
-                        price = priceStr.toInt(),
-                        surveyYear = yearStr.toInt(),
-                        marketType = MarketType.RETAIL,
-                    )
-                } else {
-                    null
+                    if (
+                        yearStr != null &&
+                            priceStr?.all(Char::isDigit) == true &&
+                            priceStr.isNotEmpty()
+                    ) {
+                        AnnualNationalPrice(
+                            product = product,
+                            price = priceStr.toInt(),
+                            surveyYear = yearStr.toInt(),
+                            marketType = MarketType.RETAIL,
+                        )
+                    } else {
+                        null
+                    }
                 }
-            }
+        return entities.ifEmpty { null }
     }
 
     private fun normalizePriceSections(responseString: String): List<KamisYearlyPriceSectionDto>? {
