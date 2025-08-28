@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.web.reactive.function.client.WebClientRequestException
 
 @Configuration
 class KamisDailyPriceBatchConfiguration(
@@ -55,6 +56,9 @@ class KamisDailyPriceBatchConfiguration(
             .reader(kamisDailyPriceApiReader(null))
             .processor(kamisDailyPriceProcessor(null))
             .writer(kamisDailyPriceJpaWriter())
+            .faultTolerant()
+            .retryLimit(3)
+            .retry(WebClientRequestException::class.java)
             .build()
     }
 
@@ -67,34 +71,8 @@ class KamisDailyPriceBatchConfiguration(
             surveyDateString?.let { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
                 ?: throw IllegalArgumentException("surveyDate job parameter is required")
 
-        val categoryCodes = listOf("100", "200", "300", "400", "500", "600")
-        val regionCodes =
-            listOf(
-                "1101",
-                "2100",
-                "2200",
-                "2300",
-                "2401",
-                "2501",
-                "2601",
-                "3111",
-                "3214",
-                "3211",
-                "3311",
-                "3511",
-                "3711",
-                "3911",
-                "3113",
-                "3613",
-                "3714",
-                "3814",
-                "3145",
-                "2701",
-                "3112",
-                "3138",
-                "3411",
-                "3818",
-            )
+        val categoryCodes = productRepository.findDistinctCategoryCodes()
+        val regionCodes = regionRepository.findAllCodes()
 
         return KamisDailyPriceApiReader(
             kamisApiClient = kamisApiClient,

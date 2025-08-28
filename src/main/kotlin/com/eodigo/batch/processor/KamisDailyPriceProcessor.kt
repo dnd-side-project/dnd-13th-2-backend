@@ -18,6 +18,10 @@ class KamisDailyPriceProcessor(
     private val surveyDate: LocalDate,
 ) : ItemProcessor<KamisDailyPriceApiData, DailyRegionalPrice> {
 
+    companion object {
+        private const val RANK_CODE_STANDARD = "04"
+    }
+
     private val log = LoggerFactory.getLogger(javaClass)
 
     // 1. Product와 Region 정보를 메모리에 캐싱
@@ -34,7 +38,7 @@ class KamisDailyPriceProcessor(
         // 2. 가격 정보가 유효하지 않으면 필터링
         val item = wrapper.item
 
-        if (item.rank != "상품") {
+        if (item.rankCode != RANK_CODE_STANDARD) {
             return null
         }
 

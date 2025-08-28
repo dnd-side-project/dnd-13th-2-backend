@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.web.reactive.function.client.WebClientRequestException
 
 @Configuration
 class KamisAnnualPriceBatchConfiguration(
@@ -50,6 +51,9 @@ class KamisAnnualPriceBatchConfiguration(
             .reader(kamisAnnualPriceReader())
             .processor(kamisAnnualPriceProcessor())
             .writer(kamisAnnualPriceJpaItemWriter())
+            .faultTolerant()
+            .retryLimit(3)
+            .retry(WebClientRequestException::class.java)
             .build()
     }
 
@@ -59,7 +63,7 @@ class KamisAnnualPriceBatchConfiguration(
             .name("kamisAnnualPriceReader")
             .entityManagerFactory(entityManagerFactory)
             .pageSize(CHUNK_SIZE)
-            .queryString("SELECT p FROM Product p ORDER BY p.id ASC")
+            .queryString("SELECT p FROM Product p WHERE p.categoryCode != '500' ORDER BY p.id ASC")
             .build()
     }
 
