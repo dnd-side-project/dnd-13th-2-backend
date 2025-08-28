@@ -25,9 +25,11 @@ class KamisAnnualPriceProcessor(
     override fun process(item: Product): List<AnnualNationalPrice>? {
         val kindCode = item.kindCode ?: return null
 
+        val currentYear = LocalDate.now().year.toString()
+
         try {
             // 1. API 호출
-            val responseString = fetchAnnualPriceData(item.itemCode, kindCode)
+            val responseString = fetchAnnualPriceData(item.itemCode, kindCode, currentYear)
             if (responseString == null) {
                 return null
             }
@@ -39,7 +41,7 @@ class KamisAnnualPriceProcessor(
             }
 
             // 3. 엔티티로 변환
-            return convertToEntities(priceItems, item)
+            return convertToEntities(priceItems, item, currentYear)
         } catch (e: InterruptedException) {
             log.warn("Annual price processing was interrupted for product id: ${item.id}", e)
             Thread.currentThread().interrupt()
@@ -53,8 +55,11 @@ class KamisAnnualPriceProcessor(
     }
 
     /** API를 호출하고 응답 문자열을 반환합니다. 유효하지 않은 응답은 null을 반환합니다. */
-    private fun fetchAnnualPriceData(itemCode: String, kindCode: String): String? {
-        val currentYear = LocalDate.now().year.toString()
+    private fun fetchAnnualPriceData(
+        itemCode: String,
+        kindCode: String,
+        currentYear: String,
+    ): String? {
         val responseString =
             kamisApiClient.getYearlyPrices(
                 certKey = apiKey,
@@ -85,30 +90,31 @@ class KamisAnnualPriceProcessor(
         return retailPriceSection?.items
     }
 
-    /** DTO 리스트를 엔티티 리스트로 변환합니다. */
+    /** DTO 리스트를 엔티티 리스트로 변환합니다. 현재 연도의 데이터만 필터링합니다. */
     private fun convertToEntities(
         priceItems: List<KamisYearlyPriceItemDto>,
         product: Product,
+        currentYear: String,
     ): List<AnnualNationalPrice> {
-        return priceItems.mapNotNull { priceItem ->
-            val yearStr = priceItem.div
-            val priceStr = priceItem.avgData?.replace(",", "")
+        return priceItems
+            .filter { it.div == currentYear }
+            .mapNotNull { priceItem ->
+                val yearStr = priceItem.div
+                val priceStr = priceItem.avgData?.replace(",", "")
 
-            if (
-                yearStr?.all(Char::isDigit) == true &&
-                    priceStr?.all(Char::isDigit) == true &&
-                    priceStr.isNotEmpty()
-            ) {
-                AnnualNationalPrice(
-                    product = product,
-                    price = priceStr.toInt(),
-                    surveyYear = yearStr.toInt(),
-                    marketType = MarketType.RETAIL,
-                )
-            } else {
-                null
+                if (
+                    yearStr != null && priceStr?.all(Char::isDigit) == true && priceStr.isNotEmpty()
+                ) {
+                    AnnualNationalPrice(
+                        product = product,
+                        price = priceStr.toInt(),
+                        surveyYear = yearStr.toInt(),
+                        marketType = MarketType.RETAIL,
+                    )
+                } else {
+                    null
+                }
             }
-        }
     }
 
     private fun normalizePriceSections(responseString: String): List<KamisYearlyPriceSectionDto>? {
