@@ -8,69 +8,53 @@ import com.eodigo.domain.restaurant.enums.SortType
 import com.eodigo.domain.restaurant.exception.StoreNotFoundException
 import com.eodigo.domain.restaurant.repository.MenuRepository
 import com.eodigo.domain.restaurant.repository.StoreRepository
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
-import org.springframework.data.repository.findByIdOrNull
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class StoreService(
-    private val menuRepository: MenuRepository,
-    private val storeRepository: StoreRepository,
+        private val menuRepository: MenuRepository,
+        private val storeRepository: StoreRepository,
 ) {
     @Transactional(readOnly = true)
     fun searchStores(request: SearchRequest): List<StoreDto> {
-        // 메뉴명과 카테고리로 필터링
-        val menus =
-            menuRepository.findByNameContaining(request.menuName).filter {
-                it.store.category == request.category
-            }
+        // DB에서 공간 검색 및 최저가 메뉴 필터링을 모두 수행
+        val searchResults = storeRepository.findStoresAndMenusInArea(
+                menuName = request.menuName,
+                category = request.category.name,
+                userLat = request.userLat,
+                userLng = request.userLng,
+                southWestLat = request.southWestLat,
+                southWestLng = request.southWestLng,
+                northEastLat = request.northEastLat,
+                northEastLng = request.northEastLng
+        )
 
-        // 가게별로 그룹화한 뒤, 각 가게에서 가장 저렴한 메뉴 하나만 선택
-        val cheapestMenuByStore =
-            menus
-                .groupBy { it.store }
-                .mapNotNull { (store, menusInStore) ->
-                    val cheapestMenu = menusInStore.minByOrNull { it.price }
-                    cheapestMenu?.let { store to it }
+        val cheapestStoresPerStore = searchResults
+                .groupBy { it.getStoreId() } // 가게 ID로 그룹화
+                .mapNotNull { (_, results) -> // 각 가게에 대해
+                    results.minByOrNull { it.getPrice() } // 가격이 가장 낮은 메뉴
                 }
 
-        // 지도 경계값 내의 매장 필터링
-        val locationFilteredMenus =
-            cheapestMenuByStore.filter { (store, _) ->
-                store.latitude >= request.southWestLat &&
-                    store.latitude <= request.northEastLat &&
-                    store.longitude >= request.southWestLng &&
-                    store.longitude <= request.northEastLng
-            }
+        val storeDtoList = cheapestStoresPerStore.map { result ->
+            StoreDto(
+                    storeId = result.getStoreId(),
+                    storeName = result.getStoreName(),
+                    distance = result.getDistance().toInt(),
+                    menuName = result.getMenuName(),
+                    price = result.getPrice(),
+                    latitude = result.getLatitude(),
+                    longitude = result.getLongitude(),
+                    address = result.getAddress(),
+                    imgUrl = result.getImgUrl()
+            )
+        }
 
-        val storeDtoList =
-            locationFilteredMenus.map { (store, menu) ->
-                val distance =
-                    calculateDistance(
-                        lat1 = request.userLat,
-                        lon1 = request.userLng,
-                        lat2 = store.latitude,
-                        lon2 = store.longitude,
-                    )
-                val storeId = requireNotNull(store.id)
-                StoreDto(
-                    storeId = storeId,
-                    storeName = store.name,
-                    distance = distance.toInt(),
-                    menuName = menu.name,
-                    price = menu.price,
-                    latitude = store.latitude,
-                    longitude = store.longitude,
-                    address = store.address,
-                    imgUrl = store.imgUrl,
-                )
-            }
-
-        // 정렬
         return when (request.sort) {
             SortType.PRICE -> storeDtoList.sortedBy { it.price }
             SortType.DISTANCE -> storeDtoList.sortedBy { it.distance }
@@ -101,23 +85,23 @@ class StoreService(
         val menus = menuRepository.findAllByStoreId(storeId)
 
         val distance =
-            calculateDistance(
-                lat1 = latitude,
-                lon1 = longitude,
-                lat2 = store.latitude,
-                lon2 = store.longitude,
-            )
+                calculateDistance(
+                        lat1 = latitude,
+                        lon1 = longitude,
+                        lat2 = store.location.x,
+                        lon2 = store.location.y,
+                )
 
         return StoreDetailDto(
-            storeId = storeId,
-            name = store.name,
-            distance = distance.toInt(),
-            category = store.category,
-            address = store.address,
-            latitude = store.latitude,
-            longitude = store.longitude,
-            imgUrl = store.imgUrl,
-            menus =
+                storeId = storeId,
+                name = store.name,
+                distance = distance.toInt(),
+                category = store.category,
+                address = store.address,
+                latitude = store.location.y,
+                longitude = store.location.x,
+                imgUrl = store.imgUrl,
+                menus =
                 menus.map { menu ->
                     val menuId = requireNotNull(menu.id)
                     MenuDto(id = menuId, name = menu.name, price = menu.price)
