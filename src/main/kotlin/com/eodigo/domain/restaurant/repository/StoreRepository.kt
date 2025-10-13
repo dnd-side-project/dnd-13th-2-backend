@@ -7,21 +7,30 @@ import org.springframework.data.repository.query.Param
 
 interface StoreSearchResult {
     fun getStoreId(): Long
+
     fun getStoreName(): String
+
     fun getDistance(): Double
+
     fun getMenuName(): String
+
     fun getPrice(): Int
+
     fun getLatitude(): Double
+
     fun getLongitude(): Double
+
     fun getAddress(): String
+
     fun getImgUrl(): String?
 }
 
 interface StoreRepository : JpaRepository<Store, Long> {
 
     @Query(
-            nativeQuery = true,
-            value = """
+        nativeQuery = true,
+        value =
+            """
             SELECT
                 s.id as storeId,
                 s.name as storeName,
@@ -51,16 +60,16 @@ interface StoreRepository : JpaRepository<Store, Long> {
                     ), 4326),
                     s.location
                 )
-        """
+        """,
     )
     fun findStoresAndMenusInArea(
-            @Param("userLng") userLng: Double,
-            @Param("userLat") userLat: Double,
-            @Param("category") category: String,
-            @Param("menuName") menuName: String,
-            @Param("southWestLng") southWestLng: Double,
-            @Param("southWestLat") southWestLat: Double,
-            @Param("northEastLng") northEastLng: Double,
-            @Param("northEastLat") northEastLat: Double
+        @Param("userLng") userLng: Double,
+        @Param("userLat") userLat: Double,
+        @Param("category") category: String,
+        @Param("menuName") menuName: String,
+        @Param("southWestLng") southWestLng: Double,
+        @Param("southWestLat") southWestLat: Double,
+        @Param("northEastLng") northEastLng: Double,
+        @Param("northEastLat") northEastLat: Double,
     ): List<StoreSearchResult>
 }
