@@ -23,54 +23,41 @@ class StoreService(
 ) {
     @Transactional(readOnly = true)
     fun searchStores(request: SearchRequest): List<StoreDto> {
-        // 메뉴명과 카테고리로 필터링
-        val menus =
-            menuRepository.findByNameContaining(request.menuName).filter {
-                it.store.category == request.category
-            }
+        // DB에서 공간 검색 및 최저가 메뉴 필터링을 모두 수행
+        val searchResults =
+            storeRepository.findStoresAndMenusInArea(
+                menuName = request.menuName,
+                category = request.category.name,
+                userLat = request.userLat,
+                userLng = request.userLng,
+                southWestLat = request.southWestLat,
+                southWestLng = request.southWestLng,
+                northEastLat = request.northEastLat,
+                northEastLng = request.northEastLng,
+            )
 
-        // 가게별로 그룹화한 뒤, 각 가게에서 가장 저렴한 메뉴 하나만 선택
-        val cheapestMenuByStore =
-            menus
-                .groupBy { it.store }
-                .mapNotNull { (store, menusInStore) ->
-                    val cheapestMenu = menusInStore.minByOrNull { it.price }
-                    cheapestMenu?.let { store to it }
+        val cheapestStoresPerStore =
+            searchResults
+                .groupBy { it.getStoreId() } // 가게 ID로 그룹화
+                .mapNotNull { (_, results) -> // 각 가게에 대해
+                    results.minByOrNull { it.getPrice() } // 가격이 가장 낮은 메뉴
                 }
 
-        // 지도 경계값 내의 매장 필터링
-        val locationFilteredMenus =
-            cheapestMenuByStore.filter { (store, _) ->
-                store.latitude >= request.southWestLat &&
-                    store.latitude <= request.northEastLat &&
-                    store.longitude >= request.southWestLng &&
-                    store.longitude <= request.northEastLng
-            }
-
         val storeDtoList =
-            locationFilteredMenus.map { (store, menu) ->
-                val distance =
-                    calculateDistance(
-                        lat1 = request.userLat,
-                        lon1 = request.userLng,
-                        lat2 = store.latitude,
-                        lon2 = store.longitude,
-                    )
-                val storeId = requireNotNull(store.id)
+            cheapestStoresPerStore.map { result ->
                 StoreDto(
-                    storeId = storeId,
-                    storeName = store.name,
-                    distance = distance.toInt(),
-                    menuName = menu.name,
-                    price = menu.price,
-                    latitude = store.latitude,
-                    longitude = store.longitude,
-                    address = store.address,
-                    imgUrl = store.imgUrl,
+                    storeId = result.getStoreId(),
+                    storeName = result.getStoreName(),
+                    distance = result.getDistance().toInt(),
+                    menuName = result.getMenuName(),
+                    price = result.getPrice(),
+                    latitude = result.getLatitude(),
+                    longitude = result.getLongitude(),
+                    address = result.getAddress(),
+                    imgUrl = result.getImgUrl(),
                 )
             }
 
-        // 정렬
         return when (request.sort) {
             SortType.PRICE -> storeDtoList.sortedBy { it.price }
             SortType.DISTANCE -> storeDtoList.sortedBy { it.distance }
@@ -104,8 +91,8 @@ class StoreService(
             calculateDistance(
                 lat1 = latitude,
                 lon1 = longitude,
-                lat2 = store.latitude,
-                lon2 = store.longitude,
+                lat2 = store.location.x,
+                lon2 = store.location.y,
             )
 
         return StoreDetailDto(
@@ -114,8 +101,8 @@ class StoreService(
             distance = distance.toInt(),
             category = store.category,
             address = store.address,
-            latitude = store.latitude,
-            longitude = store.longitude,
+            latitude = store.location.y,
+            longitude = store.location.x,
             imgUrl = store.imgUrl,
             menus =
                 menus.map { menu ->

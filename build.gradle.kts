@@ -58,6 +58,9 @@ dependencies {
     // H2
     testImplementation("com.h2database:h2")
 
+    implementation("org.hibernate.orm:hibernate-spatial:6.2.7.Final")
+    implementation("org.locationtech.jts:jts-core:1.19.0")
+
     // Spring Batch Test
     testImplementation("org.springframework.batch:spring-batch-test")
 
