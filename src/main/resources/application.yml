@@ -8,3 +8,14 @@ spring:
 
 admin:
   api-key: ${ADMIN_API_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
+  server:
+    port: 9000
+  metrics:
+    tags:
+      application: ${spring.application.name}
